@@ -1,0 +1,437 @@
+高级排序
+
+归并排序 Merge Sort
+* 自顶向下（递归）
+* 自底向上（迭代）
+快速排序
+* 双路快速排序
+* 三路快速排序
+
+
+归并排序
+* 先将整个数组一分为二，然后继续对这两部分一分为二，直到每份含有一个元素为止，在进行合并。
+* 归并排序的优化
+    * 优化1：当 arr[mid] <= arr[mid+1] 时，arr[lhs, rhs] 这部分就是有序的，就不需要按照元素大小进行合并了
+    * 优化2：对归并递归终止条件进行优化，当数组中的元素个数较少时，使用插入排序进行优化
+
+// 将 arr[lhs, mid] 和 arr[mid+1, rhs] 两部分进行归并
+template <typename T>
+void __merge(T arr[], int lhs, int mid, int rhs) {
+    // 辅助数组
+    T temp[rhs - lhs + 1];
+    
+    // 将 arr 中 [lhs, rhs] 的元素拷贝到 temp 中
+    // 注意 temp 数组的下标是从 0 开始的
+    for (int i= lhs; i <= rhs; i++) {
+        temp[i-lhs] = arr[i];
+    }
+    
+    // 对两个子数组进行合并
+    int i = lhs;         // 遍历左边子数组
+    int j = mid + 1;     // 遍历右边子数组
+    for (int k = lhs ; k <= rhs; k++) {
+        if (i > mid) {
+            arr[k] = temp[j-lhs];
+            j++;
+        } else if (j > rhs) {
+            arr[k] = temp[i-lhs];
+            i++;
+        } else if (temp[i-lhs] <= temp[j-lhs]) {
+            arr[k] = temp[i-lhs];
+            i++;
+        } else {
+            arr[k] = temp[j-lhs];
+            j++;
+        }
+    }
+}
+
+
+// 归并排序递归过程
+template <typename T>
+void __mergeSort(T arr[], int lhs, int rhs) {
+
+    // 递归终止条件
+//    if (lhs >= rhs) {
+//        return;
+//    }
+    
+    // 优化2：当数组中的元素个数较少时，使用插入排序进行优化
+    if (rhs - lhs <= 15) {
+        insertionSort(arr, lhs, rhs);
+        return;
+    }
+    
+    int mid = lhs + (rhs - lhs) / 2 ;  // 一分为二
+    __mergeSort(arr, lhs, mid);      // 对左半部分进行归并
+    __mergeSort(arr, mid+1, rhs);    // 对右半部分进行归并
+    
+    // 优化1：当 arr[mid] <= arr[mid+1] 时，arr[lhs, rhs] 这部分就是有序的
+    if(arr[mid] > arr[mid+1]) {
+        __merge(arr, lhs, mid, rhs);    // 对两部分进行合并
+    }
+}
+
+
+// 自顶向下进行归并排序
+// 时间复杂度：O(nlogn)
+// 空间复杂度：O(n)
+template <typename T>
+void mergeSort(T arr[], int n) {
+    __mergeSort(arr, 0, n-1);
+}
+
+
+自底向上的归并排序算法
+* mergeSortBottomUp 是自底向上的，不像 quickSort 或者 heapSort 或者自顶向下的 mergeSort，实现过程依赖对数组数据的随机访问。
+* mergeSortBottomUp 的主过程和 merge 的过程，都只需要通过依次后移索引就可以完成整个算法，索引和元素均不需要在数据间跳动。而根据索引直接访问数据恰恰是链表这种数据结构不支持的操作。
+* 所以 mergeSortBottomUp 的思路可以非常好的对链表进行 O(nlogn) 级别的排序。
+// 自底向上的排序
+template <typename T>
+void mergeSortBottomUp(T arr[], int n) {
+
+    // 依次将 size = 2, 4, 8, 16, 32 … 长度的子数组两两合并
+    for ( int size = 2; size <= n; size += size ) {
+ 
+        // 每一轮将长度为 size 的子数组，两两合并成一个有序的数组
+        // i + size < n 为了防止越界
+        for( int i = 0; i + size < n; i += size + size ) { 
+            // 对 arr[i, i+size-1] 和 arr[ i+size, i + 2*size - 1 ] 进行归并
+            __merge( arr, i, i+size-1, min(i+size+size-1, n-1) );
+        }
+    }
+}
+
+
+Leetcode 23 合并 K 个排序链表 （经典题目）
+合并 K 个排序链表，返回合并后的排序链表。请分析和描述算法的复杂度。
+
+示例：
+输入：
+[
+    1 —> 4 —> 5,
+    1 —> 3 —> 4,
+    2 —> 6
+]
+输出：1 —> 1—> 2 —> 3 —> 4 —> 4 —> 5 —> 6
+
+#include <iostream>
+#include <vector>
+#include <cassert>
+#include <queue>
+
+using namespace std;
+
+/// Definition for singly-linked list.
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode(int x) : val(x), next(NULL) {}
+};
+
+// Merge List with Divide and Conquer
+// Using the Bottom-Up Merge
+// Since Top-Down Merge will lead to TLE :-(
+//
+// Time Complexity: O(nlogk), where k is len(lists) and n is the nodes number
+// Space Complexity: O(logk)
+class Solution {
+public:
+    ListNode* mergeKLists(vector<ListNode*>& lists) {
+
+        if(lists.size() == 0)
+            return NULL;
+
+        while( lists.size() > 1 ) {
+            int index = 0;                              // 两两合并后的新链表存放的位置
+
+            for(int i = 0; i < lists.size() ; i += 2) { // 两两合并
+                if( i + 1 == lists.size() )
+                    lists[index] = lists[i];
+                else
+                    lists[index] = merge(lists[i], lists[i + 1]);
+
+                index ++;
+            }
+
+            while(lists.size() > index)                // 扔掉后面没用的链表
+                lists.pop_back();
+        }
+
+        return lists[0];
+
+    }
+
+private:
+    ListNode* merge(ListNode* list1, ListNode* list2){
+
+        ListNode* dummyHead = new ListNode(-1);
+        ListNode* curNode = dummyHead;
+
+        while(list1 != NULL && list2 != NULL){
+            if(list1->val < list2->val){
+                curNode->next = list1;
+                list1 = list1->next;
+            }
+            else{
+                curNode->next = list2;
+                list2 = list2->next;
+            }
+
+            curNode = curNode->next;
+            curNode->next = NULL;
+        }
+
+        if(list1) 
+            curNode->next = list1;
+        if(list2)
+            curNode->next = list2;
+
+        ListNode* ret = dummyHead->next;
+        delete dummyHead;
+
+        return ret;
+    }
+};
+
+
+快速排序（第一版）
+* 缺点：若数组中含有大量重复的元素时，依然会退化到 O(n^2)
+* 时间复杂度：O(nlogn)
+* 空间复杂度：O(logn)，递归时开辟的系统空间
+template <typename T>
+int __partition(T arr[], int lhs, int rhs) {
+
+    // 优化:目的是防止整个数组近乎有序时，快排退化为O(n^2)的问题。
+    // 随机选取一个位置作为基准值（随机化快速排序法）
+    swap(arr[lhs], arr[lhs + rand()%(rhs-lhs+1)]);
+    
+    // 取第一个作为基准值，对数组进行划分
+    T e = arr[lhs];
+    
+    int p = lhs;
+    for (int i = lhs+1; i <= rhs; i++) {
+        if (arr[i] < e) {
+            swap(arr[i], arr[p+1]);
+            p++;
+        }
+    }
+
+    swap(arr[lhs], arr[p]);
+
+    return p;
+}
+
+template <typename T>
+void __quickSort(T arr[], int lhs, int rhs) {
+
+    // 当数组中只剩下一个元素时，这个数组就是有序的，结束递归
+    if (lhs >= rhs) {            // if(rhs - lhs <= 15) {    // 使用插入排序进行优化
+        return;                  //     insertionSort(arr, lhs, rhs);
+    }                            // }
+    
+    // 将 arr[p] 放到正确的位置上，把数组分为两部分
+    // 使得一部分小于等于 arr[p]，一部分大于 arr[p]
+    int p = __partition(arr, lhs, rhs);
+
+    __quickSort(arr, lhs, p-1);
+    __quickSort(arr, p+1, rhs);
+}
+
+template <typename T>
+void quickSort(T arr[], int n) {
+
+    // 生成随机种子
+    srand(time(NULL));
+
+    // 调用递归函数进行快排
+    __quickSort(arr , 0, n-1);
+}
+
+
+双路快速排序（第二版，较常用）
+* 可以处理数组中含有大量重复的元素
+* 使用双指针对撞技术
+* 时间复杂度：O(nlogn)
+* 空间复杂度：O(logn)，递归时开辟的系统空间
+// 2-路快速排序
+// 使得 arr[lhs+1, i] <= v, arr(j，rhs] >= v
+
+template <typename T>
+int __partition2Ways(T arr[], int lhs, int rhs) {
+    
+    // 随机选取一个基准值，对数组进行分割
+    swap(arr[lhs], arr[lhs + rand()%(rhs-lhs+1)]);
+
+    T e = arr[lhs];
+
+    // 使用指针对撞技术
+    // arr[l+1 … i) <= v; arr(j…r] >= v
+    int i = lhs+1, j = rhs;
+    while (true) {
+        while ( i <= rhs && arr[i] < e ) i++;
+        while ( j >= lhs+1 && arr[j] > e ) j--;
+            
+        if (i > j) break;
+        
+        swap(arr[i], arr[j]);
+        i++;
+        j--;
+    }
+
+    // 将 e 放入正确的位置上
+    swap(arr[lhs], arr[j]);
+    
+    // 返回分割点的位置
+    return j;
+}
+
+template <typename T>
+void __quickSort(T arr[], int lhs, int rhs) {
+    // 递归终止条件
+    if (lhs >= rhs) {
+        return;
+    }
+    
+    // 将数组分为两部分，将 v 放到正确的位置 p 上，使得左半部分小于等于 v，右半部分大于 v
+    int p = __partition2Ways(arr, lhs, rhs);
+    __quickSort(arr, lhs, p-1);
+    __quickSort(arr, p+1, rhs);
+}
+
+template <typename T>
+void quickSort(T arr[], int n) {
+    srand(time(NULL));
+    __quickSort(arr , 0, n-1);
+}
+
+
+三路快速排序
+* 若数组中含有大量重复的元素时，效率更高；
+* 时间复杂度：O(nlogn)
+* 空间复杂度：O(logn)，递归时开辟的系统空间
+// 3-路快速排序处理 arr[l…r]
+// 使得 arr[lhs...lt-1] < V, arr[lt...gt-1] == V , arr[gt...rhs] > V
+// 之后递归对 < V 和 > V 的两部分进行3-路快速排序
+template <typename T>
+void __quickSort3Ways(T arr[], int lhs, int rhs) {
+    
+    // 递归终止条件
+    if (rhs <= lhs) {
+        return;
+    }
+    
+    // partition
+    swap(arr[lhs], arr[lhs + rand()%(rhs-lhs+1)]);
+    T e = arr[lhs];
+    
+    int lt = lhs;        // arr[l+1 … lt] < v
+    int gt = rhs + 1;    // arr[gt … r] > v
+    int i = lhs + 1;     // arr[lt+1 … i) == v
+    while (i < gt) {
+        if (arr[i] < e) {
+            swap(arr[i], arr[lt+1]);
+            lt ++;
+            i++;
+        } else if (arr[i] > e) {
+            swap(arr[i], arr[gt-1]);
+            gt --;
+        } else {    // arr[i] == v
+            i++;
+        }
+    }
+    
+    // 将基准值放到正确的位置上
+    swap(arr[lhs], arr[lt]);
+    
+    __quickSort3Ways(arr, lhs, lt-1);
+    __quickSort3Ways(arr, gt, rhs);
+}
+
+void quickSort3Ways(T arr[], int n) {
+    srand(time(NULL));
+    __quickSort3Ways(arr, 0, n-1);
+}
+
+
+归并排序和快速排序的衍生问题
+* 归并排序和快速排序都使用了分治算法
+* 分治算法
+    * 顾名思义，分而治之，就是将原问题分割成同等结构的子问题，之后将子问题逐一解决后，原问题也就得到了解决。
+
+
+
+
+剑指 Offer 51 （hard）
+求解一个数组中逆序数对的个数。
+
+示例：
+输入：nums = [ 8, 6, 2, 3, 1, 5, 7, 4 ]
+输出：16
+
+思路：
+1. 暴力解法：考察每一个数对。算法复杂度：O(n^2)；
+2. 使用归并排序求逆序数对，在合并的时候使用计数器即可。算法复杂度：O(nlogn)
+#include <iostream>
+#include <vector>
+
+using namespace std;
+class Solution {
+public:
+    long long inversionCount(int arr[], int n) {
+        return __inversionCount(arr, 0, n-1);
+    }
+
+private:
+    long long __inversionCount(int arr[], int lhs, int rhs) {
+        if(lhs >= rhs) {
+            return 0;
+        }
+    
+        int mid = lhs + (rhs-lhs)/2;
+
+        long long resL = __inversionCount(arr, lhs, mid);
+        long long resR = __inversionCount(arr, mid+1, rhs);
+        
+        return resL + resR + __merge(arr, lhs, mid, rhs);
+    }
+
+    long long __merge(int arr[], int lhs, int mid, int rhs) {
+        // 保存逆序对的个数
+        long long res = 0;
+        
+        // 申请赋值空间，并初始化
+        int *aux = new int[rhs-lhs+1];
+        for(int i = lhs; i <= rhs; i++) {
+            aux[i-lhs] = arr[i];
+        }
+
+        // 初始化，i 指向左半部分所指元素，j 指向右半部分所指元素
+        int i = lhs, j = mid + 1;
+        for(int k = lhs; k <= rhs; k++) {
+            if(i > mid) {    // 如果左半部分元素已经全部处理完毕
+                arr[k] = aux[j-lhs];
+                j++;
+            } else if(j > rhs) {    // 如果有右部分元素已经全部处理完毕
+                arr[k] = aux[i-lhs];
+                i++;
+            } else if(aux[i-lhs] <= aux[j-lhs]) { // 左半部分所指元素 < 右半部分所指元素
+                arr[k] = aux[i-lhs];
+                i++;
+            } else {    // 左半部分所指元素 > 右半部分所指元素
+                arr[k] = aux[j-lhs];
+                j++;
+                
+                // 因为右半部分 j 所指的元素小
+                // 这个元素与左半部分所有未处理的元素都构成了逆序对
+                // 左半部分此时未处理的元素个数为 mid - i + 1
+                res += (long long)(mid - i + 1);
+            }
+        }
+        delete[] aux;
+        
+        return res;
+    }
+};
+
+
