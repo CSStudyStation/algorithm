@@ -1,0 +1,291 @@
+简单排序
+* 选择排序 Selection Sort
+* 冒泡排序 Bubble Sort
+* 插入排序 Insertion Sort
+* 希尔排序 Shell Sort
+
+
+选择排序
+* 每趟从数组中剩下的元素中选出最小的，放到 i 的位置；
+* 排序结果：从小到大
+
+        4 2 3 5 1
+第一趟   1|2 3 5 4
+第二趟   1 2|3 5 4
+第三趟   1 2 3|5 4
+第四趟   1 2 3 4|5
+第五趟   1 2 3 4 5
+
+// 定义模板函数
+template <typename T>
+void selectionSort(T arr[], int n) {
+    // 需要 n 趟，每趟找出需要放在 i 位置上的元素
+    for (int i = 0; i < n; i++) {
+        int minIndex = i;                  // 记录最小值的索引位置
+
+        for (int j = i+1; j < n; j++) {    // 寻找 [i,n) 区间里的最小值
+            if (arr[j] < arr[minIndex]) {
+                minIndex = j;
+            }
+        }
+
+        swap(arr[i], arr[minIndex]);
+    }
+}
+时间复杂度：平均和最坏显然是 O(n^2)，最好也是 O(n^2), 因为我们每次都需要扫描完所有剩下的数，才知道谁是最小的。
+空间复杂度：O(1)
+稳定性：不稳定
+交换次数：最多是 O(n) 次。
+
+
+冒泡排序
+* 交换过程模拟气泡在水中慢慢升起的过程；
+* 整体性能没有插入排序好；
+* 对于已经排好序或者基本有序的数组表现非常好，因此在数据量不大又基本有序的情况下可以使用（比如图形学中检测数据错误等）；
+template <typename T>
+void bubbleSort( T arr[], int n) {
+    // 需要 n 趟，每趟找出需要放在 i 位置上的元素
+    for(int i = 0; i < n; i++) {
+        for(int j = n - 1; j > i; j--) {    // 从后向前进行判断
+            if(a[j] < a[j-1]) {
+                swap(a[j], a[j-1]);
+            }
+        }
+    }
+}
+时间复杂度：平均和最坏都是 O(n^2)，最好的情况也是 O(n^2)。
+不过对于已经排好序的数组可以优化到 O(n).
+空间复杂度：O(1)
+稳定性：稳定的。我们只在 a[j] < a[j-1] 的情况下才进行交换，就能保证其稳定性。
+
+
+插入排序（应用场景较多）
+* 默认数组中的第一个元素是第一次插入的，从第二个元素开始，与前面已插入的元素比较大小，寻找合适的插入位置；
+* 插入排序可以提前终止内层循环，所以理论上比选择排序快一些；
+* 对几乎有序的数组来说，效率很高;
+
+template <typename T>
+void insertionSort(T arr[], int n) {
+    for (int i = 1; i < n; i++) {
+        T e = arr[i];                          // 将 arr[i] 进行备份
+        
+        int j = i;                             // 索引 j 保存元素 e 应该插入的位置
+        for (; j > 0 && arr[j-1] > e; j--) {   // 有机会提前终止内层循环
+            arr[j] = arr[j-1];                 // 后移
+        }
+        
+        arr[j] = e;
+    }
+}
+
+// 对数组 arr 索引从 lhs 到 rhs 区间的元素进行插入排序
+template <typename T>
+void insertionSort(T arr[], int lhs, int rhs) {
+    for (int i = lhs; i <= rhs; i++) {
+        T e = arr[i+1];    // 将 arr[i] 进行备份
+
+        int j = i+1;       // 索引 j 保存元素 e 应该插入的位置
+        for (; j > lhs && arr[j-1] > e; j--) { // 有机会提前终止内层循环
+            arr[j] = arr[j-1];
+        }
+
+        arr[j] = e;
+    }
+}
+时间复杂度：平均和最坏是 O(n^2)，最好的情况是数组本来已经是有序的，是 O(n)
+空间复杂度：O(1)
+稳定性：是稳定的，我们只在 arr[j] 和 arr[j-1] 不相等的情况下进行交换。
+
+
+希尔排序
+* 是插入排序的延伸；
+* 每次尝试与前面的第 h 个元素进行比较，将 h 从很大的一个值逐渐缩小到 1；
+// 希尔排序
+template <typename T>
+void shellSort(T arr[], int n) {
+
+    // 计算 increment sequence: 1, 4, 13, 40, 121, 364, 1093...
+    int h = 1; // 初始值为希尔排序划分每个子区间中的元素个数
+    while (h < n / 3) {
+        h = 3 * h + 1;
+    }
+    
+    while (h >= 1) {
+
+        // 对 arr[i], arr[i-h], arr[i-2*h], arr[i-3*h]... 使用插入排序
+        for (int i = h; i < n; i++) {
+            // 备份
+            T e = arr[i];
+
+            int j = i;
+            for (; j >= h && arr[j-h] > e; j -= h) {
+                // 后移
+                arr[j] = arr[j-h];
+            }
+
+            arr[j] = e;
+        }
+
+        h /= 3;
+    }
+}
+
+
+Demo
+#include <iostream>
+#include "Student.h"
+using namespace std;
+
+int main(int argc, const char * argv[]) {
+
+    int a[10] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+    selectionSort(a, 10);
+    for (int i = 0; i < 10; i++) {
+        cout << a[i] << " ";
+    }
+    cout << endl;
+    
+    float b[10] = {10.0, 9.9, 8.8, 7.7, 6.6, 5.5, 4.4, 3.3, 2.2, 1.1};
+    selectionSort(b, 10);
+    for (int i = 0; i < 10; i++) {
+        cout << b[i] << " ";
+    }
+    cout << endl;
+    
+    string c[5] = {"E", "D", "C", "B", "A"};
+    selectionSort(c, 5);
+    for (int i = 0; i < 5; i++) {
+        cout << c[i] << " ";
+    }
+    cout << endl;
+    
+    Student d[5] = {{"E",92}, {"D",100}, {"C",99}, {"B",90}, {"A",95}};
+    selectionSort(d, 5);
+    for (int i = 0; i < 5; i++) {
+        cout << d[i] ;
+    }
+    cout << endl;
+    return 0;
+}
+
+
+/* ------------------------- student.h ----------------------- */
+#ifndef Student_h
+#define Student_h
+
+#include <iostream>
+//using namespace std;
+
+struct Student {
+    std::string name;
+    int score;
+    
+    // 重新定义 < 操作符
+    bool operator<(const Student &otherStudent) {
+        return score < otherStudent.score;
+    }
+    
+    // 重新定义输出
+    friend std::ostream& operator<<(std::ostream &os, const Student &student) {
+        os << "Student: " << student.name << " " << student.score << std::endl;
+        return os;
+    }
+};
+
+#endif /* Student_h */
+/*----------------------------------------------------------*/
+
+
+随机生成算法测试用例
+#ifndef SortTestHelper_h
+#define SortTestHelper_h
+
+#include <iostream>
+#include <cassert>
+
+using namespace std;
+
+namespace SortTestHelper {
+    int* generateRandomArray(int n, int lhs, int rhs) {
+        assert(lhs <= rhs);
+        
+        int *arr = new int[n];
+        srand(time(NULL));
+        for (int i = 0; i < n; i++) {
+            arr[i] = rand() % (rhs - lhs + 1) + lhs;
+        }
+
+        return arr;
+    }
+    
+    int* generateNearlyOrderedArray(int n, int swapTimes) {
+        // 先生成一个有序的数组
+        int *arr = new int[n];
+        for(int i = 0; i < n; i++) {
+            arr[i] = i;
+        }
+        
+        // 随机挑选几对，进行交换
+        srand(time(NULL));
+        for(int i = 0; i < swapTimes; i++) {
+            int k = rand() % n;
+            int j = rand() % n;
+            swap(arr[k], arr[j]);
+        }
+    }
+    
+    
+    template <typename T>
+    void pirntArray(T arr[], int n) {
+        for (int i = 0; i < n; i++) {
+            cout << arr[i] << " ";
+        }
+        cout << endl;
+    }
+
+    // 对排序算法的正确性进行验证
+    template <typename T>
+    bool isSorted(T arr[], int n) {
+        for (int i = 0; i < n-1; i++) {
+            if(arr[i] > arr[i+1]) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+     测试排序算法的性能
+     
+     @param funcName 排序算法名称
+     @param sort 排序算法函数指针
+     @param arr 测试用例数组
+     @param n 测试用例中元素的个数
+     */
+    template <typename T>
+    void testSortTime(string funcName, void(*sort)(T[], int), T arr[], int n) {
+        clock_t startTime = clock();
+        sort(arr, n);
+        clock_t endTiem = clock();
+        
+        assert(isSorted(arr, n));
+
+        cout << funcName << " cost time: " << double(endTiem - startTime) / CLOCKS_PER_SEC << endl;
+    }
+}
+
+#endif /* SortTestHelper_h */
+
+
+/* =================================================== */
+int main(int argc, const char* argv[]) {
+    int n = 100;
+    int *arr = SortTestHelper::generateRandomArray(n, 0, n);
+    selectionSort(arr, n);
+    SortTestHelper::pirntArray(arr, n);
+
+    // 测试算法的性能
+    SortTestHelper::testSortTime("selectionSort", selectionSort, arr, n);
+
+    return 0;
+}
