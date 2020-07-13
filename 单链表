@@ -1,0 +1,1107 @@
+单链表
+
+为了方便在本地测试，需要创建链表，打印链表等操作
+
+#include <iostream>
+
+using namespace std;
+
+/// Definition for singly-linked list.
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode(x) : val(x), next(NULL) {}
+};
+
+// 使用一个数组创建一个单链表
+ListNode* createLinkedList(int arr[], int n) {
+    if(n == 0) return NULL;
+
+    // 创建头结点
+    ListNode* head = new ListNode(arr[0]); 
+
+    ListNode* curNode = head;
+    for(int i = 1; i < n; i++) {
+        curNode->next = new ListNode(arr[i]);
+        curNode = curNode->next;
+    }
+    
+    return head;
+}
+
+// 打印单链表
+void printLinkedList( ListNode* head) {
+
+    ListNode* curNode = head;
+    
+    while(curNode != NULL) {
+        cout << curNode->val << " -> ";
+        curNode = curNode->next;
+    }
+
+    cout << "NULL"<< endl;
+
+    return;
+}
+
+// 释放单链表
+void freeLinkedList( listNode* head) {
+    ListNode* curNode = head;
+    
+    while( curNode != NULL ) {
+        ListNode* delNode = curNode;
+        curNode = curNode->next;
+        delete delNode;
+    }
+    
+    return;
+}
+
+ListNode* findNode(ListNode* head, int x){
+    ListNode* curNode = head;
+
+    while(curNode != NULL){
+        if(curNode->val == x)
+            return curNode;
+
+        curNode = curNode->next;
+    }
+
+    return NULL;
+}
+
+int main() {
+    int arr[] = {1, 2, 3, 4, 5};
+    int n = sizeof(arr) / sizeof(int);
+    
+    ListNode* head = createLinkedList(arr,n);
+    printLinkedList(head);
+
+    ListNode* node2 = findNode(head, 2);
+
+    freeLinkedList(head);
+}
+
+
+
+LeetCode 206 Reverse Linked List（经典）
+反转一个链表（通常不能改变节点值，因为当节点中存储的数据量比较大时，性能很低）
+
+例如：
+              1 —> 2 —> 3 —> 4 —> 5 —> NULL
+    pre      cur  next    // 初始化 3 个指针
+
+返回：
+NULL <— 1 <— 2 <— 3 <— 4 <— 5
+#include <iostream>
+
+using namespace std;
+
+/// Definition for singly-linked list.
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode(int x) : val(x), next(NULL) {}
+};
+
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+class solution {
+public: 
+    ListNode* reverseList(ListNode* head) {
+
+        ListNode* pre = NULL;
+        ListNode* cur = head;
+
+        while( cur != NULL ) {
+            ListNode *next = cur->next;
+
+            // 反转指向
+            cur->next = per;
+
+            // 反转操作后，向后移动指针
+            pre = cur;
+            cur = next;
+        }
+        
+        return pre;
+    }
+};
+
+
+
+LeetCode 92 Reverse Linked List II
+反转一个链表从 m 到 n 的元素。
+
+示例：
+输入 1—> 2 —> 3 —> 4 —> 5 —> NULL,  m = 2, n = 4
+输出：1 —> 4 —> 3 —>2 —> 5 —> NULL
+
+
+
+LeetCode 83 Remove Duplicates from Sorted List
+给出一个有序链表，删除其中所有重复元素，使得每个元素只保留一次。
+
+示例：
+输入：1 —> 1 —> 2 —> NULL,
+输出：1 —> 2 —> NULL
+
+输入：1 —> 1 —> 2 —> 3 —> 3 —> NULL,
+输出：1 —> 2 —> 3 —> NULL
+
+
+
+LeetCode 86 Partition List
+给出一个链表和一个特定值 x，对链表进行分割，使得小于 x 的节点都在前大于等于 x 的节点之前。
+
+你应当保留两个分区中每个节点的初始相对位置。（稳定性）
+
+示例：
+输入：1 —> 4 —> 3 —> 2 —> 5 —> 2 —> NULL,  x = 3;
+输出：1 —> 2 —> 2 —> 4 —> 3 —> 5 —> NULL;
+#include <iostream>
+
+using namespace std;
+
+/// Definition for singly-linked list.
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode(int x) : val(x), next(NULL) {}
+};
+
+// Linear Scan 线性扫描
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+class Solution {
+public:
+    ListNode* partition(ListNode* head, int x) {
+        ListNode* dummyHead1 = new ListNode(-1);
+        ListNode* dummyHead2 = new ListNode(-1);
+        ListNode* prev1 = dummyHead1;
+        ListNode* prev2 = dummyHead2;
+
+        for(ListNode* cur = head; cur != NULL;) {
+            if(cur->val < x) {
+                prev1->next = cur;
+                cur = cur->next;
+                prev1 = prev1->next;
+                prev1->next = NULL;
+            }
+            else {
+                prev2->next = cur;
+                cur = cur->next;
+                prev2 = prev2->next;
+                prev2->next = NULL;
+            }
+        }
+
+        prev1->next = dummyHead2->next;
+
+        ListNode* ret = dummyHead1->next;
+        delete dummyHead1;
+        delete dummyHead2;
+
+        return ret;
+    }
+};
+
+
+
+LeetCode 328 Odd Even Linked List
+给出一个链表，将链表重新整理，使得所有索引为奇数的节点排在索引为偶数的节点前面。第一个节点的索引为 1.
+
+示例：
+输入：1 —> 2 —> 3 —> 4 —> 5 —> NULL;
+输出：1 —> 3 —> 5 —> 2 —> 4 —> NULL;
+
+#include <iostream>
+
+using namespace std;
+
+/// Definition for singly-linked list.
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode(int x) : val(x), next(NULL) {}
+};
+
+
+// Split the Linked List into two and then merge
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+class Solution {
+public:
+    ListNode* oddEvenList(ListNode* head) {
+        if(head == NULL || head->next == NULL || head->next->next == NULL)
+            return head;
+
+        ListNode* dummyHead1 = new ListNode(-1);
+        ListNode* dummyHead2 = new ListNode(-1);
+
+        ListNode* odd = dummyHead1;
+        ListNode* even = dummyHead2;
+
+        ListNode *p = head;
+
+        for(int i = 1; p != NULL; i++) {
+            if(i % 2 == 0) {    // 奇数链
+                odd->next = p;
+                odd = odd->next;
+                odd->next = NULL;
+            }
+            else {             // 偶数链
+                even->next = p;
+                even = even->next;
+                even->next = NULL;
+            }
+            
+            p = p->next;
+        }
+
+        odd->next = dummyHead2->next;
+
+        ListNode* ret = dummyHead1->next;
+
+        delete dummyHead1;
+        delete dummyHead2;
+
+        return ret;
+    }
+};
+
+
+
+LeetCode 2 Add Two Numbers（经典）
+给出两个非空链表，表示两个非负整数。其中每一个整数的各位数字是按照逆序的方式存储的，并且它们的每个节点只能存储一位数字。
+我们将这两个数相加起来，则会返回一个新的链表来表示它们的和。
+您可以假设除了数字 0 之外，这两个数都不会以 0 开头。
+
+示例：
+输入：342 + 465 = 807，2 —> 4 —> 3 —> NULL，5 —> 6 —> 4 —> NULL。
+输出：7 —> 0 —> 8 —> NULL
+
+#include <iostream>
+
+using namespace std;
+
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode(int x) : val(x), next(NULL) {}
+};
+
+// Time Complexity: O(n)
+// Space Complexity: O(n)
+class Solution {
+public:
+    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+        int flag = 0; // 存储进位
+        ListNode* p = l1;
+        ListNode* q = l2;
+
+        ListNode* dummyHead = new ListNode(-1);
+        ListNode* result = dummyHead;
+
+        while(p != NULL && q != NULL) {
+            int sum = p->val + q->val + flag;
+            p = p->next;
+            q = q->next;
+            
+            flag = sum / 10;    // 处理进位
+            sum = sum % 10;     // 当前两个节点和的个数数字    
+
+            result->next = new ListNode(sum);
+            result = result->next;
+        }
+    
+        while(p != NULL) {
+            int sum = p->val + flag;
+            p = p->next;
+
+            flag = sum / 10;    // 处理进位
+            sum = sum % 10;     // 当前两个节点和的个数数字
+
+            result->next = new ListNode(sum);
+            result = result->next;
+        }
+
+        while(q != NULL) {
+            int sum = q->val + flag;
+            q = q->next;
+            flag = sum / 10;    // 处理进位
+            sum = sum % 10;     // 当前两个节点和的个数数字
+
+            result->next = new ListNode(sum);
+            result = result->next;
+        }
+        
+        // 处理最后还有进位的情况
+        if(flag != 0) { 
+            result->next = new ListNode(flag);
+        }
+
+        return dummyHead->next;
+    }
+};
+
+
+
+LeetCode 445 Add Two Numbers ||
+给出两个非空链表，表示两个非负整数。数字最高位位于链表开始位置。它们的每个节点只存储一位数字。将这两数相加会返回一个新的链表。
+你可以假设除了数字 0 之外，这两个数字都不会以零开头。
+
+进阶：
+如果输入链表不能修改该如何处理？换句话说，你不能对列表中的节点进行翻转。
+
+示例：
+输入：342 + 465 = 807，3 —> 4 —> 2 —> NULL，4 —> 6 —> 5 —> NULL。（提示：使用辅助的数据结构）
+输出：8 —> 0 —> 7 —> NULL.
+
+#include <iostream>
+#include <stack>
+
+using namespace std;
+
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode(int x) : val(x), next(NULL) {}
+};
+
+// Time Complexity: O(max(m,n))
+// Space Complexity: O(m+n)
+class Solution {
+public:
+    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+        ListNode* p = l1;
+        ListNode* q = l2;
+
+        ListNode* dummyHead = new ListNode(-1);
+        ListNode* result = dummyHead;
+        int flag = 0;   // 进位标记
+        int a = 0;
+        int b = 0;
+        int sum = 0;
+
+        stack<int> pStack;  // 将 l1 压栈
+        while(p) {
+            pStack.push(p->val);
+            p = p->next;
+        }
+
+        stack<int> qStack;  // 将 l2 压栈
+        while(q) {
+            qStack.push(q->val);
+            q = q->next;
+        }
+
+        while(!pStack.empty() || !qStack.empty()) {
+            a = 0;
+            b = 0;
+            sum = 0;
+
+            if(!pStack.empty()) {   // 取出栈顶元素
+                a = pStack.top();
+                pStack.pop();
+            }
+
+            if(!qStack.empty()) {   // 取出栈顶元素
+                b = qStack.top();
+                qStack.pop();
+            }
+
+            sum = a + b + flag;     // 每位数字相加
+            flag = sum / 10;        // 计算进位
+            sum = sum % 10;         // 计算相加后每一位的数字
+
+            result = new ListNode(sum); // 新建的节点，即高位数字相加后的节点，插入链表的头部
+            result->next = dummyHead->next;
+            dummyHead->next = result;
+        }
+
+        if(flag != 0) {                 // 处理最高位相加后，还有进位的情况
+            result = new ListNode(flag);
+            result->next = dummyHead->next;
+            dummyHead->next = result;
+        }
+
+        return dummyHead->next;
+    }
+};
+
+
+
+设立链表的虚拟头结点
+
+LeetCode 203 Remove Linked List Elements
+在链表中删除值为 val 的节点
+
+示例：
+输入：1 —> 2 —> 6 —> 3 —> 4 —> 5 —> 6 —> NULL，val = 6
+输出：1 —> 2 —> 3 —> 4 —> 5 —> NULL.
+
+输入：6 —> 6 —> 6 —> NULL，val = 6
+输出：NULL
+
+#include <iostream>
+
+using namespace std;
+
+/// Definition for singly-linked list
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode(x) : val(x), next(NULL) {}
+};
+
+class Solution {
+public:
+     ListNode* removeElements( ListNode* head, int val) {
+       
+        // 使用虚拟头结点
+        ListNode *dummyHead = new ListNode(0);
+        dummyHead->next = head;
+
+        // 删除除头结点之外的节点
+        ListNode* curNode = dummyHead;
+        while( curNode->next != NULL ) {
+            if( curNode—>next—>val == val ) {
+                ListNode* delNode = curNode->next;     // 标记要删除的节点
+                curNode->next = delNode->next;
+                delNode->next = NULL;
+                delete delNode;
+            } else {
+                curNode = curNode->next;
+            }
+        }
+
+        // 释放虚拟头结点的空间
+        ListNode *retNode = dummyHead->next;
+        delete dummyHead;
+
+        return retHead;
+    }
+};
+
+
+LeetCode 82 Remove Duplicates from Sorted List II
+给定一个有序链表，将其中重复的元素全部删除，只保留原始链表中没有重复出现的数字。
+
+示例：
+输入：1 —> 2 —> 3 —> 3 —> 4 —> 4 —> 5 —> NULL
+输出：1—> 2 —> 5 —> NULL
+
+输入：1 —> 1 —> 1 —> 2 —> 3 —> NULL
+输出：2—> 3 —> NULL
+
+#include <iostream>
+
+using namespace std;
+
+/// Definition for singly-linked list.
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode(int x) : val(x), next(NULL) {}
+};
+
+// Linear Scan
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+class Solution {
+public:
+    ListNode* deleteDuplicates(ListNode* head) {
+        ListNode* dummyHead = new ListNode(-1);
+        dummyHead->next = head;
+
+        ListNode* prev = dummyHead;
+        ListNode* cur = prev->next;
+
+        while(cur) {
+            int num = 0;
+            ListNode* p = cur;
+
+            while(p && p->val == cur->val) {
+                num ++;        // 标记是否有重复的元素
+                p = p->next;
+            }
+
+            if(num > 1)
+                prev->next = p;
+            else
+                prev = cur;
+
+            cur = p;
+        }
+
+        ListNode* ret = dummyHead->next;
+        delete dummyHead;
+
+        return ret;
+    }
+};
+
+
+LeetCode 21 Merge Two Sorted Lists
+合并两个有序链表。
+
+示例：
+输入：1—> 2 —> 4,  1 —> 3 —> 4
+输出：1 —> 1 —> 2 —> 3 —> 4 —> 4
+
+#include <iostream>
+
+using namespace std;
+
+/// Definition for singly-linked list.
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode(int x) : val(x), next(NULL) {}
+};
+
+// Iterative
+// Time Complexity: O(len(L1) + len(L2))
+// Space Complexity: O(1)
+
+class Solution {
+public:
+    ListNode* mergeTwoLists(ListNode* l1, ListNode* l2) {
+        ListNode* dummyHead = new ListNode(-1);
+        ListNode* p = dummyHead;
+
+        ListNode* p1 = l1;
+        ListNode* p2 = l2;
+
+        while(p1 != NULL && p2 != NULL){
+            if(p1->val <= p2->val){
+                p->next = p1;
+                P1 = p1->next;
+            }
+            else {
+                p->next = p2;
+                p2 = p2->next;
+            }
+
+            p = p->next;
+        }
+
+        if(p1 != NULL)
+            p->next = p1;
+
+        if(p2 != NULL)
+            p->next = p2;
+
+        ListNode* ret = dummyHead->next;
+
+        dummyHead->next = NULL;
+        delete dummyHead;
+
+        return ret;
+    }
+};
+
+
+LeetCode 24 Swap Nodes in Paris
+给定一个链表，对于两个相邻的节点，交换其位置。（只能对节点进行操作，不能修改节点的值。）
+
+示例：
+输入：1 —> 2 —> 3 —> 4 —> NULL
+输出：2 —> 1 —> 4 —> 3 —> NULL
+#include <iostream>
+
+using namespace std;
+
+/// Definition for singly-linked list
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode(x) : val(x), next(NULL) {}
+};
+
+class Solution {
+public:
+    ListNode* swapPairs( ListNode* head ) {
+
+        // 创建虚拟头节点
+        ListNode* dummyHead = new ListNode(0);
+        dummyHead->next = head;
+        
+        // 记录要交换的两个节点前面的那个节点
+        ListNode* p = dummyHead;
+        while( p->next != NULL && p->next->next != NULL ) {
+
+            // 记录要交换的两个节点，及这一对节点的下一个节点
+            ListNode* node1 = p->next;
+            ListNode* node2 = p->next->next;
+            ListNode* next = node2->next;
+            
+            // 进行交换
+            node2->next = node1;
+            node1->next = next;
+
+            // 修改 p 指针的指向
+            p->next = node2;
+            p = node1;
+        }
+
+        ListNode *retNode = dummyHead->next;
+        delete dummyHead;
+
+        return retNode;
+    }
+};
+
+
+LeetCode 25 Reverse Nodes in k-Group
+给定一个链表，每 k 个节点为一组，反转每一组的 k 个节点。k 为正整数且小于等于链表的长度。如果链表长度不是 k 的整数倍，剩余部分不需要进行反转。
+
+示例：
+输入：1—> 2 —> 3 —> 4 —> 5 —> NULL
+若 k = 2，输出：2 —> 1 —> 4 —> 3 —> 5 —> NULL
+若 k = 3，输出：3 —> 2 —> 1 —> 4 —> 5 —> NULL
+
+
+
+LeetCode 147 Insertion Sort List
+为一个链表进行插入排序
+
+
+
+LeetCode 148 Sort List    (经典)
+在 O(nlogn) 的时间复杂度和常数级空间复杂度下，对一个链表进行排序。（使用归并排序）
+
+示例:
+输入: 4 —> 2 —> 1 —> 3
+输出: 1 —> 2 —> 3 —> 4
+
+输入: -1 -> 5 -> 3 -> 4 -> 0
+输出: -1 -> 0 -> 3 -> 4 -> 5
+
+
+
+LeetCode 237 Delete Node in a Linked List
+给定链表中的一个节点（非末尾节点），删除该节点。
+
+示例：
+输入：head = [4, 5, 1, 9]，node = 5
+输出：[4, 1, 9]
+
+#include <iostream>
+#include <cassert>
+
+using namespace std;
+
+// Time Complexity: O(1)
+// Space Complexity: O(1)
+class Solution {
+public:
+    void deleteNode(ListNode* node) {
+        assert(node != NULL && node->next != NULL);
+
+        node->val = node->next->val;       // 用后面一个节点的值覆盖掉当前节点
+        ListNode* delNode = node->next;    // 将后面一个节点标记为要删除的节点
+        node->next = delNode->next;        // 修改当前节点的后继
+
+        delete delNode;
+
+        return;
+    }
+};
+
+
+
+双指针技术
+* 两个指针进行对撞；
+* 两个指针形成滑动窗口；
+* 一个慢指针，一个快指针；
+
+LeetCode 19 Remove Nth Node From End of List      (经典)
+给定一个链表，删除倒数第 n 个节点
+
+示例：
+输入：1—> 2 —> 3 —> 4 —> 5 —> 6 —> NULL，n = 2
+输出：1—> 2 —> 3 —> 4 —> 6 —> NULL
+
+#include <iostream>
+
+using namespace std;
+
+/// Definition for singly-linked list
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode(x) : val(x), next(NULL) {}
+};
+
+class Solution {
+public:
+    ListNode* removeNthFromEnd( ListNode* head, int n ) {
+        assert( n >= 0 );
+        
+        // 创建虚拟头节点
+        ListNode* dummyHead = new ListNode(0);
+        dummyHead->next = head;
+
+        ListNode* p = dummyHead;
+        ListNode* q = dummyHead;
+        
+        // 制作一个窗口，使得 p、q 之间有 n+1 个元素的间隔
+        for( int i = 0; i < n+1; i++ ) {
+            assert(q);
+            q = q->next;
+        }
+        
+        // 同时移动 p, q 两个指针，当 q 指向链表尾部时，p 就指向要删除节点的前一个节点
+        while( q != NULL ) {
+            p = p->next;
+            q = q->next;
+        }
+
+        // 删除倒数第 N 个节点
+        ListNode* delNode = p->next;
+        p->next = delNode->next;
+        delete delNode;
+
+        // 删除虚拟头结点
+        ListNode* retNode = dummyHead->next;
+        delete dummyHead;
+        return retNode;
+    }
+};
+
+
+LeetCode 141 环形链表
+给定一个链表，判断链表中是否有环。
+为了表示给定链表中的环，我们使用整数 pos 来表示链表尾链接到链表中的位置（索引从 0 开始）。如果 pos = -1，则表示链表中没有环。
+
+示例：
+输入：head = [3, 2, 0, -4]，pos = 1
+输出：true
+解释：链表中有一个环，其尾部连接到第二个节点。
+
+输入：head = [1, 2], pos = 0
+输出：true
+解释：链表中有一个环，其尾部连接到第一个节点。
+
+输入：head = [1], pos = -1
+输出：false
+解释：链表中没有环。
+
+                     //——————a———————\\
+                    //                \\ 
+                   //                  \\
+                   //                  \\
+head------F--------//entry             \\
+                   \\                  //
+                   \\                  //first meet，lower == first
+                    \\                //
+                     \\______b_______//
+ 
+快指针一次跑两个节点，慢指针一次跑一个节点
+第一次相遇时所走过的距离
+distance(faster) = 2 * distance(slower)
+distance(slower) = F+a
+distance(faster) = F+a+b+a 
+即：F+a+b+a = 2 * (F+a)
+结论：F = b
+
+#include <iostream>
+
+using namespace std;
+
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode(int x) : val(x), next(NULL) {}
+};
+
+class Solution {
+public:
+    bool hasCycle(ListNode *head) {
+        ListNode *slower = head;    // 跑的快的运动员，一次跑两步
+        ListNode *faster = head;    // 跑的慢的运动员，一次跑一步
+
+        while(faster != NULL && faster->next != NULL) {
+                faster = faster->next->next;    // 一次跑两步
+                slower = slower->next;          // 一次跑一步
+
+                if(faster == slower) {          // 两者相遇了，说明是环形跑道
+                    return true;
+                }
+        }
+
+        return false;
+    }
+};
+
+
+
+LeetCode 142 环形链表 ||
+给定一个链表，返回链表开始入环的第一个节点。 如果链表无环，则返回 null。
+为了表示给定链表中的环，我们使用整数 pos 来表示链表尾连接到链表中的位置（索引从 0 开始）。 如果 pos 是 -1，则在该链表中没有环。
+说明：不允许修改给定的链表。
+
+示例：
+输入：head = [3, 2, 0, -4], pos = 1
+输出：tail connects to node index 1
+解释：链表中有一个环，其尾部连接到第二个节点。
+
+输入：head = [1, 2], pos = 0
+输出：tail connects to node index 0
+解释：链表中有一个环，其尾部连接到第一个节点。
+
+输入：head = [1], pos = -1
+输出：no cycle
+解释：链表中没有环。
+ 
+#include <iostream>
+
+using namespace std;
+
+struct ListNode{
+    int val;
+    ListNode *next;
+    ListNode(int x) : val(x), next(NULL) {}
+};
+
+class Solution {
+public:
+    ListNode *detectCycle(ListNode *head) {
+        ListNode *faster = head;
+        ListNode *slower = head;
+        ListNode *tempHead = head;
+
+        while(faster != NULL && faster->next != NULL) {
+            faster = faster->next->next;
+            slower = slower->next;
+            if(faster == slower) {  // 两指针相遇，说明有环存在
+                // 查找第一个入环的节点
+                while(tempHead != slower) {
+                    tempHead = tempHead->next;
+                    slower = slower->next;
+                }
+                return tempHead;
+            }
+        }
+
+        return NULL;
+    }
+};
+
+
+LeetCode 160 相交链表
+编写一个程序，找到两个单链表相交的起始节点。
+如下面的两个链表：
+A: a1 -> a2 -> c1 -> c2 -> c3
+B: b1 -> b2 -> b3 -> c1 -> c2 -> c3
+
+注意：
+如果两个链表没有交点，返回 null.
+在返回结果后，两个链表仍须保持原有的结构。
+可假定整个链表结构中没有循环。
+程序尽量满足 O(n) 时间复杂度，且仅用 O(1) 内存。
+
+示例：
+输入：intersectVal = 8, listA = [4, 1, 8, 4, 5], listB = [5, 0, 1, 8, 4, 5], skipA = 2, skipB = 3
+输出：Reference of the node with value = 8
+解释：
+A: 4 -> 1 -> 8 -> 4 -> 5
+B: 5 -> 0 -> 1 -> 8 -> 4 -> 5
+相交节点的值为 8 （注意，如果两个列表相交则不能为 0）。在 A 中，相交节点前有 2 个节点；在 B 中，相交节点前有 3 个节点。
+
+示例：
+输入：intersectVal = 0, listA = [2,6,4], listB = [1,5], skipA = 3, skipB = 2
+输出：null
+解释：
+A: 2 -> 6 -> 4
+B: 1 -> 5
+这两个链表不相交，因此返回 null。
+从各自的表头开始算起，由于这两个链表不相交，所以 intersectVal 必须为 0，而 skipA 和 skipB 可以是任意值。
+
+
+思路一
+* 这两个链表相连接，会形成环；
+思路二
+* 若遍历到 c1 时，两个链表即相交；
+p = a1 -> a2 -> c1 -> c2 -> c3 -> b1 -> b2 -> b3 -> c1 -> c2 -> c3
+q = b1 -> b2 -> b3 -> c1 -> c2 -> c3 -> a1 -> a2 -> c1 -> c2 -> c3
+
+#include <iostream>
+
+using namespace std;
+/// Definition for singly-linked list
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode(int x) : val(x), next(NULL) {}
+};
+
+// Time Complexity: O(m+n)
+// Space Complexity: O(1)
+class Solution {
+public:
+    ListNode *getIntersectionNode(ListNode *headA, ListNode *headB) {
+        ListNode *p = headA;
+        ListNode *q = headB;
+        // p = a1 -> a2 -> c1 -> c2 -> c3 -> b1 -> b2 -> b3 -> c1 -> c2 -> c3
+        // q = b1 -> b2 -> b3 -> c1 -> c2 -> c3 -> a1 -> a2 -> c1 -> c2 -> c3
+        while(p != q) {
+            if(p) {p = p->next;} else {p = headB;}
+            if(q) {q = q->next;} else {q = headA;}
+        }
+        return p;
+    }
+};
+
+
+
+LeetCode 61 Rotate List
+给定一个链表，让这个链表向右旋转 K 位。其中 K 为非负数。
+
+示例：
+输入：1—> 2 —> 3 —> 4 —> 5 —> NULL，k = 2
+输出：4—> 5 —> 1—> 2 —> 3 —> NULL
+// 思路：首先要定位到倒数 k 的位置
+
+#include <iostream>
+
+using namespace std;
+
+/// Definition for singly-linked list.
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode(int x) : val(x), next(NULL) {}
+};
+
+// Brute Force
+// Two Pointers
+// Time Complexity: O(N)
+// Space Complexity: O(1)
+class Solution {
+public:
+    ListNode* rotateRight(ListNode* head, int k) {
+        if(head == NULL)
+            return NULL;
+
+        int len = get_len(head);
+        k = k % len;
+
+        ListNode* end = head;
+        for(int i = 0 ; i < k ; i ++)
+            end = end->next;
+
+        ListNode* start = head;
+
+        while(end->next != NULL) {    // 形成滑动窗口
+            start = start->next;
+            end = end->next;
+        }
+
+        end->next = head;
+        head = start->next;
+        start->next = NULL;
+
+        return head;
+    }
+
+private:
+    int get_len(ListNode* head) {   // 计算链表的长度
+        int res = 0;
+        while(head){
+            res ++;
+            head = head->next;
+        }
+        return res;
+    }
+};
+
+
+
+LeetCode 234 Palindrome Linked List
+给定一个链表，判断这个链表是否为回文链表。（关于中心左右对称的字符串）
+
+示例：
+输入：1—> 2
+输出：false
+
+输入：1—> 2 —> 2 —> 1
+输出：true
+
+#include <iostream>
+
+using namespace std;
+
+/// Definition for singly-linked list.
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode(int x) : val(x), next(NULL) {}
+};
+
+// Two Pointers to Reverse and Traverse
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+class Solution {
+public:
+    bool isPalindrome(ListNode* head) {
+
+        if(head == NULL || head->next == NULL)
+            return true;
+
+        ListNode* slow = head;
+        ListNode* fast = head;
+        while(fast->next != NULL && fast->next->next != NULL) {
+            slow = slow->next;
+            fast = fast->next->next;
+        }
+
+        slow->next = reverse(slow->next);
+
+        slow = slow->next;
+
+        ListNode* cur = head;
+        while(slow != NULL) {
+            if(cur->val != slow->val)
+                return false;
+            else {
+                slow = slow->next;
+                cur = cur->next;
+            }
+        }
+
+        return true;
+    }
+
+private:
+    ListNode* reverse(ListNode* head) {    // 对 head 为头结点的链表进行反转
+
+        if(head == NULL || head->next == NULL)
+            return head;
+
+        ListNode* pre = head;
+        ListNode* cur = head->next;
+        ListNode* next = cur->next;
+
+        head->next = NULL;
+
+        while(true){
+            cur->next = pre;
+
+            pre = cur;
+            cur = next;
+
+            if(cur == NULL)
+                break;
+
+            next = cur->next;
+        }
+
+        return pre;
+    }
+};
+
+
+
