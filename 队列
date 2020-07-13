@@ -1,0 +1,365 @@
+队列
+
+队列的基本应用
+* 广度优先遍历
+    * 求解树的层序遍历；
+    * 求解无权图的最短路径；
+
+leetcode 102 Binary Tree Level Order Traversal （经典）
+对一棵二叉树进行层序遍历，表明每一层的节点数据，返回一个二维数组。
+
+输入：                                    输出：
+                 3                              [
+              /    \                               [3],
+             9      20                             [9, 20],
+                   /   \                           [15, 7]
+                 15     7                       ]
+
+#include <iostream>
+#include <vector>
+#include <queue>
+
+using namespace std;
+
+/// Definition for a binary tree node
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+};
+
+class Solution {
+public:
+    vector<vector<int>> levelOrder(TreeNode* root) {
+        vector<vector<int>> result;               // 返回结果
+
+        if( root == NULL ) {
+            return result;
+        }
+
+        // 创建一个队列，保存（节点、第几层）这样的数据对
+        queue<pari<TreeNode*, int> queue; 
+
+        queue.push(make_pair(root, 0));           // 根节点作为第 0 层入队      
+
+        while( !queue.empty() ) {
+            TreeNode* node = queue.front().first; // 节点
+            int level = queue.front().second;     // 层数
+            queue.pop();
+            
+            if(level == result.size()) {
+                result.push_back(vector<int>());
+            }
+            
+            result[level].push_back(node->val);   // 将节点加入对应的数组中
+            
+            if(node->left) {    // 左孩子入队
+                queue.push(make_pair(node->left, level+1));
+            }
+            if(node->right) {   // 右孩子入队
+                queue.push(make_pair(node->right, level+1));
+            }
+        }
+
+        return result;
+    }
+};
+
+
+leetcode 107 Binary Tree Zigzag Level Order Traversal ||
+对一棵二叉树进行层序遍历，返回从底层到上层每层的节点。
+
+输入：                                       输出：
+                 3                                [
+              /    \                                [15, 7],
+             9      20                              [9, 20],
+                   /  \                             [3]
+                 15     7                         ]
+// 对数组 result 做逆序
+reverse(result.begin(), result.end())
+
+
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <cassert>
+
+using namespace std;
+
+/// Definition for a binary tree node.
+struct TreeNode {
+    int val;
+    TreeNode *left;
+    TreeNode *right;
+    TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+};
+
+
+// BFS
+// Time Complexity: O(n), where n is the number of nodes in the tree
+// Space Complexity: O(n)
+
+class Solution {
+public:
+
+    vector<vector<int>> levelOrderBottom(TreeNode* root) {
+
+        vector<vector<int>> res;
+        if(root == NULL)
+            return res;
+            
+            // 队列中存放的数据对表示：节点和节点所在的层数
+        queue< pair<TreeNode*,int> > q; 
+
+        // 将根节点入队
+        q.push(make_pair(root, 0));
+
+        while(!q.empty()){
+            TreeNode* node = q.front().first;
+            int level = q.front().second;
+            q.pop();
+
+            if(level == res.size())
+                res.push_back( vector<int>() );
+
+            res[level].push_back(node->val);
+
+            if(node->left)
+                q.push(make_pair(node->left, level+1));
+
+            if(node->right)
+                q.push(make_pair(node->right, level+1));
+        }
+
+        // 对 res 进行逆序
+        reverse(res.begin(), res.end());
+
+        return res;
+    }
+};
+
+
+
+leetcode 103 Binary Tree Zigzag Level Order Traversal
+对一棵二叉树进行层序遍历，按照之字形（S 形）的顺序返回所有节点。
+
+输入：                                    输出：
+                 3                              [
+              /    \                              [3],
+             9     20                             [20, 9],
+                  /   \                           [15, 7]
+                15     7                        ]
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+/// Definition for a binary tree node.
+struct TreeNode {
+    int val;
+    TreeNode *left;
+    TreeNode *right;
+    TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+};
+
+// BFS
+// Time Complexity: O(n)
+// Space Complexity: O(n)
+class Solution {
+public:
+    vector<vector<int>> zigzagLevelOrder(TreeNode* root) {
+        // 保存最终的结果
+        vector<vector<int>> res;
+        
+        if(!root) {
+            return res;
+        }
+
+        vector<TreeNode*> cur;
+        cur.push_back(root);
+
+        int level = 0;
+
+        while(cur.size()) {
+            vector<TreeNode*> nextLevel;
+            vector<int> tres;
+
+            for(TreeNode* node: cur) {
+                tres.push_back(node->val);
+    
+                if(node->left) { 
+                    nextLevel.push_back(node->left);
+                }
+                if(node->right) {
+                    nextlevel.push_back(node->right);
+                }
+            }
+
+            // 每隔一层，就要颠倒一下顺序
+            if(level % 2) reverse(tres.begin(), tres.end());
+
+            res.push_back(tres);
+
+            cur = nextLevel;
+            level ++;
+        }
+        return res;
+    }
+};
+
+
+leetcode 199 Binary Tree Right Side View
+想象你站在一棵二叉树的右侧，返回所有你能看见的节点。
+
+示例：
+输入：[1, 2, 3, null, 5, null, 4]
+输出：[1, 3, 4]
+
+解释：
+                 1                     <-----            
+              /    \                                
+             2       3                 <-----        返回 [1, 3, 4]             
+              \       \                           
+               5       4               <-----      
+
+思路：选取每层中最后一个节点值即可。
+#include<iostream>
+#include<vector>
+
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode *left;
+    TreeNode *right;
+    TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+};
+
+// Time Complexity: O(n)
+// Space Complexity: O(n)
+class Solution {
+public:
+    vector<int> rightSideView(TreeNode* root) {
+        vector<int> res;
+        if(!root) {
+            return res;
+        }
+
+        vector<TreeNode*> cur = { root };
+
+        while(cur.size()) {
+            // 将数组 cur 的最后一个节点值存放到结果数组 res 中
+            res.push_back(cur.back()->val);
+
+            vector<TreeNode*> next;
+            for(TreeNode *node: cur) {
+                if(node->left) {
+                    next.push_back(node->left);
+                }
+                if(node->right) {
+                    next.push_back(node->right);
+                }
+            }
+
+            cur = next;
+        }
+
+        return res;
+    }
+};
+
+
+
+BFS 和图的最短路径
+* 广度优先遍历，寻找图的最短路径
+
+
+leetcode 279 Perfect Squares 完全平方数
+给出一个正整数 n ，寻找最少的完全平方数，使他们的和为 n.
+
+示例：
+输入：n = 12
+输出：3.    
+解释：12 = 4 + 4 + 4
+
+输入：n = 13
+输出：2.    
+解释：13 = 4 + 9
+
+#include <iostream>
+#include <queue>
+
+using namespace std;
+
+// Time Complexity: O(n)
+// Space Complexity: O(n)
+class Solution {
+public:
+    int numSquares(int n) {
+        assert( n > 0 ); // 保证 n 为正整数
+
+        // 创建队列，保存 (num, step)，step 表示经过从函数入参 n 到 num 经过多少个完全平方数 
+        queue<pair<int,int>> queue;    
+        queue.push(make_pair(n, 0));
+
+        // 创建一个数组，表示从 0 到 n，这 n+1 个数字是否已经入队（即被访问过）
+        vector<int> visited(n+1, false); 
+        visited[n] = true;
+        
+        while(!queue.empty()) {
+            int num = queue.front().first;
+            int step = queue.front().second;
+            queue.pop();
+
+            if(num == 0) {
+                return step;
+            }
+
+            for(int i = 1; i*i <= num; i++) {
+                // 防止已入队的数字 n 多次进队，造成内存过大 (剪掉已经计算过的分支)
+                int a = num - i*i;
+                if(!visited[a]) {    
+                    queue.push(make_pair(a,step+1));
+                    visited[a] = true;
+                }
+            }
+        }
+
+        throw("No Solution");
+    }
+};
+
+
+leetcode 127 单词接龙
+给定两个单词（beginWord 和 endWord）和一个字典，找到从 beginWord 到 endWord 的最短转换序列的长度。
+
+转换需遵循如下规则：
+每次转换只能改变一个字母。
+转换过程中的中间单词必须是字典中的单词。
+
+说明:
+如果不存在这样的转换序列，返回 0。
+所有单词具有相同的长度。
+所有单词只由小写字母组成。
+字典中不存在重复的单词。
+你可以假设 beginWord 和 endWord 是非空的，且二者不相同。
+
+示例
+输入:
+beginWord = "hit",
+endWord = "cog",
+wordList = ["hot","dot","dog","lot","log","cog"]
+输出: 5
+解释: 一个最短转换序列是 "hit" -> "hot" -> "dot" -> "dog" -> "cog",
+     返回它的长度 5。
+
+输入:
+beginWord = "hit"
+endWord = "cog"
+wordList = ["hot","dot","dog","lot","log"]
+输出: 0
+解释: endWord "cog" 不在字典中，所以无法进行转换。
+
+
