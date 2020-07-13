@@ -1,0 +1,482 @@
+栈的基础应用
+
+LeetCode 20. Valid Parentheses    (常考)
+给定一个字符串，只包含 (，[，{，)，]，}，判定字符串中的括号匹配是否合法。
+
+示例：
+输入："( )"，"( ) [ ] {}"
+输出：true
+
+输入："{ ]"，"( [ ) ]"
+输出：false
+
+#include <iostream>
+#include <string>
+#include <stack>
+
+using namespace std;
+
+// Time Complexity: O(n)
+// Space Complexity: O(n)
+class Solution {
+public:
+    bool isValid(string s) {
+        stack<char> stack;
+        for( int i = 0; i < s.size(); i++ ) {
+            if(s[i] == '(' || s[i] == '[' || s[i] == '{') {
+                stack.push( s[i] );
+            } else {
+                if( stack.size() == 0) {      // 查看栈是否为空
+                    return false;
+                } else {
+                    char ch = stack.top();    // 查看栈顶元素
+                    stack.pop();
+                    
+                    char match;               // 确定与当前字符配对的字符
+                    if(s[i] == ')') {
+                        match = '(';
+                    } else if (s[i] == ']') {
+                        match = '[';
+                    } else {
+                        match = '{';
+                    }
+                    
+                    if(ch != match) {
+                        return false;
+                    }
+                }
+            }
+        }
+        
+        // 若字符串扫描结束，而栈不为空时，也属于匹配失败的情况
+        if( stack.size() != 0 ) {
+            return false;
+        }
+        
+        return true;
+    }
+};
+
+
+LeetCode 150 Evaluate Reverse Polish Notation
+根据逆波兰表示法，求表达式求值。
+有效的运算符包括 + - * / 。每个运算对象可以是整数，也可以是另一个逆波兰表达式。
+
+示例：
+输入：["2", "1", "+", "3", "*"]
+输出：9。    
+解释： ( 2 + 1 ) * 3 = 9;
+
+输入：["4", "13", "5", "/", "+"]
+输出：6。    
+解释： 4 + ( 13 / 5 ) = 6;
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+// Time Complexity: O(n)
+// Space Complexity: O(n)
+class Solution {
+public:
+    int evalRPN(vector<string>& tokens) {
+        stack<int> temp;
+        for(int i = 0; i < tokens.size(); i++)
+        {
+            // 判断是否为 + - * / 运算符, 则从栈中弹出两个操作数进行运算
+            if(tokens[i].size() == 1 && (tokens[i][0] == '+' || tokens[i][0] == '-' || tokens[i][0] == '*' || tokens[i][0] == '/'))
+            {
+                int temp1 = temp.top();
+                temp.pop();
+                int temp2 = temp.top();
+                temp.pop();
+
+                if(tokens[i][0] == '+')
+                    temp.push(temp1 + temp2);
+                else if(tokens[i][0] == '-')
+                    temp.push(temp2 - temp1);
+                else if(tokens[i][0] == '*')
+                    temp.push(temp1 * temp2);
+                else 
+                    temp.push(temp2 / temp1);
+            }
+            else  // 先则转换为 int 值，然后入栈
+            {
+                temp.push(atoi(tokens[i].c_str()));
+            }
+        }
+
+        return temp.top();
+    }
+};
+
+ 
+LeetCode 71 Simplify Path
+给定一个 Unix 系统下的路径，简化这个路径。
+
+示例：
+输入："/home/"
+输出："/home"
+
+输入："/../"
+输出："/"
+
+输入："/home//foo/"
+输出："/home/foo"
+
+输入："/a/./b/../../c/"
+输出："/c"
+
+输入："/a/../../b/../c//.//"
+输出："/c"
+
+输入："/a//b////c/d//././/.."
+输出："/a/b/c"
+
+
+
+
+数制转换
+描述：输入任意的十进制正整数 N，分别输出该正整数 N 的二进制、八进制、十六进制的数。
+公式：N = （N div d）* d + N mod d
+
+1348（十进制）    =     2504（八进制）        =        544（十六进制）            =        10101000100（二进制）
+
+短除法：
+    N                            N div 8                            N mod 8
+  1348                             168                                 4
+   168                              21                                 0
+    21                               2                                 5
+     2                               0                                 2
+
+    N                            N div 16                            N mod 16
+  1348                              168                                 4
+    84                                5                                 4
+     5                                0                                 5
+
+
+
+
+栈和递归的紧密关系
+
+二叉树前序递归遍历
+// 写法一
+void preorder( TreeNode* node ) {
+    if(node) {
+        cout << node->val << " “;
+
+        // 递归过程
+        preorder(node->left);
+        preorder(node->right);
+    }
+}
+
+// 写法二
+void preorder(TreeNode* node) {
+    // 递归终止条件
+    if(node == NULL) {    
+        return;
+    }
+    
+    // 递归过程
+    cout << node->val << " ";    
+    preorder(node->left);
+    preorder(node->right);
+}
+
+LeetCode 144.  Binary Tree Preorder Traversal
+输入：[1, null, 2, 3]
+          1
+            \
+              2
+            /
+          3
+               
+输出：[1, 2, 3]
+
+#include <iostream>
+#include <string>
+#include <vector>
+
+using namespace std;
+
+/// Definition for a binary tree node
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+};
+
+// Recursive
+// Time Complexity: O(n)
+// Space Complexity: O(h), the h is the height of the tree
+class Solution {
+public:
+    vector<int> preorderTraversal(TreeNode* root) {
+        vector<int> res;
+        preorder(root, res);
+        return res;
+    }
+
+private:
+    void preorder(TreeNode* node, vector<int>& nums) {
+        if(node) {
+            nums.push_back(node->val);
+
+            preorder(node->left, nums);
+            preorder(node->right, nums);
+        }
+    }
+};
+
+
+// Classic Non-Recursive algorithm for preorder traversal
+// Time Complexity: O(n)
+// Space Complexity: O(h), the h is the height of the tree
+class Solution {
+public:
+    vector<int> preorderTraversal(TreeNode* root) {
+        vector<int> res;
+
+        if(root == NULL)
+            return res;
+
+        stack<TreeNode*> stack;
+        stack.push(root);
+
+        while(!stack.empty()) {
+            TreeNode* curNode = stack.top();
+            stack.pop();
+            res.push_back(curNode->val);      // 访问根节点
+
+            if(curNode->right)                // 先将右孩子压栈
+                stack.push(curNode->right);
+
+            if(curNode->left)                 // 后将左孩子压栈
+                stack.push(curNode->left);
+        }
+
+        return res;
+    }
+};
+
+
+// Non-Recursive algorithm for preorder traversal
+class Solution {
+public:
+    vector<int> preOrderTraversal(TreeNode* root) {
+        vector<int> result;
+        if(root == NULL) {
+            return result;
+        }
+        
+        TreeNode* cur = root;
+        stack<TreeNode*> s;
+        while(cur != NULL || !s.empty()) {
+
+            while(cur != NULL) {              // 对 root 节点，一路向左访问
+                result.push_back(cur->val);   // 访问当前节点
+                s.push(cur);                  // 将当前节点压入栈中，以便访问其右节点
+                cur = cur->left;              // 一路向左
+            }
+
+            cur = s.top();                    // 取出栈顶元素
+            s.pop();
+            
+            cur = cur->right;                // 访问栈顶元素的右子树
+        }
+
+        return result;
+    }
+};
+
+
+// 非递归算法 Non-Recursive
+// Time Complexity: O(n) 
+// Space Complexity: O(h), the h is the height of the tree
+struct Command {
+    string cmd;
+    TreeNode* node;
+    Command( string str, TreeNode* node) : cmd(str), node(node) {}
+};
+
+class Solution {
+public:
+    vector<int> preorderTraversal(TreeNode* root) {    
+        vector<int> result;    //保存遍历结果
+
+        if(root == NULL) {
+            return result;
+        }
+
+        stack<Command> stack;                    // 创建栈，模拟系统栈的效果
+
+        stack.push( Command("visit", root) );    // 将根节点入栈
+
+        while( !stack.empty() ) {
+            Command command = stack.top();
+            stack.pop();
+
+            // 分析栈顶元素含有的命令
+            if(command.cmd == "print") {
+                result.push_back( command.node->val );
+            } else {
+                assert(command.cmd == "visit");
+                if( command.node->right ) {
+                    stack.push( Command("visit", command.node->right) );
+                }
+                if( command.node->left ) {
+                    stack.push( Command("visit", command.node->left) );
+                }
+
+                stack.push( Command("print", command.node) );
+            }
+        }
+        
+        return result;
+    }
+};
+
+void print_vec(const vector<int>& vec) {
+    for(int val: vec) {
+        cout << val << " ";
+    }
+    cout << endl;
+}
+
+int main() {
+    TreeNode* root = new TreeNode(1);
+    root->right = new TreeNode(2);
+    root->right->left = new TreeNode(3);
+    print_vec(Solution().preorderTraversal(root));
+
+    return 0;
+}
+
+
+LeetCode 94. Binary Tree Inorder Traversal
+给定一个二叉树，返回它的中序遍历。
+
+示例：
+输入：[1, null, 2, 3]
+          1
+            \
+              2
+            /
+          3
+
+输出：[1, 3, 2]
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+};
+
+// Recursive
+// Time Complexity: O(n)
+// Space Complexity: O(h)    the h is the height of the tree
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode* root) {
+        vector<int> res;
+        inorder(root, res);
+        return res;
+    }
+
+private:
+    void inorder(TreeNode* node, vector<int>& nums) {
+        if(node) {
+            inorder(node->left, nums);
+            nums.push_back(node->val);
+            inorder(node->right, nums);
+        }
+    }
+};
+
+
+// Classic Non-Recursive algorithm for inorder traversal
+// Time Complexity: O(n)
+// Space Complexity: O(h) the h is the height of the tree
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode *root) {
+        vector<int> res;
+        if(root == NULL) 
+            return res;
+        
+        stack<TreeNode*> stack; 
+        TreeNode *cur = root;
+        while(cur != NULL || !stack.empty()) {
+
+            while(cur != NULL) {      // 对 cur 节点，一路向左压入栈中
+                stack.push(cur);
+                cur = cur->left;   
+            }
+
+            cur = stack.top();        // 访问当前节点
+            stack.pop();
+            res.push_back(cur->val);
+
+            cur = cur->right;         // 处理当前节点的右子树
+        }
+
+        return res;
+    }
+}
+
+
+LeetCode 145. Binary Tree Postoder Traversal
+给定一个二叉树，返回它的后序遍历。
+
+示例：
+输入：[1, null, 2, 3]
+        1
+          \
+            2
+          /
+        3
+
+输出：[3, 2, 1]
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+};
+
+class Solution {
+public:
+    vector<int> postorderTraversal(TreeNode* root) {
+        vector<int> res;
+        postorder(root, res);
+        return res;
+    }
+
+private:
+    void postorder(TreeNode* node, vector<int>& nums) {
+        if(node) {
+            postorder(node->left, nums);
+            postorder(node->right, nums);
+            
+            nums.push_back(node->val);
+        }
+    }
+};
+
+
+
