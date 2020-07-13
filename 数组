@@ -1,0 +1,885 @@
+数组
+
+数组中的问题其实最常见
+* 排序
+    * 选择排序；
+    * 插入排序；
+    * 归并排序；
+    * 快速排序；
+* 查找
+    * 二分查找
+* 使用数组的数据结构
+    * 栈；
+    * 队列；
+    * 堆；
+
+
+二分查找
+
+#include <iostream>
+#include <cmath>
+#include <cassert>
+#include <ctime.h>
+
+using namespace std;
+
+template <typename T>
+int binarySearch( T arr[], int n, T target) {
+    int left = 0, right = n - 1;    // 在 [left … right] 前闭后闭的范围内寻找 target
+
+    while(left <= right) {    // 当 left == right 时，区间 [left…right] 依然是有效的
+
+      // int mid = (left + right) / 2;     // 当left、right足够大时会造成溢出，存在 bug
+
+        int mid = left + (right - left)/2; // 使用减法防止溢出
+        if( arr[mid] == target ) {
+            return mid;
+        }
+        if(arr[mid] < target) {  // 在右半区搜索
+            left = mid + 1;      // target 在 [mid+1 … right] 中
+        }
+        else {
+            right = mid - 1;    // target 在 [left … mid-1] 中
+        }
+    }
+
+    return -1;
+}
+
+int* generateOrderedArray(int n) {
+    assert(n > 0);
+
+    int *arr = new int[n];
+
+    for(int i = 0; i < n; i++) {
+        arr[i] = i;
+    }
+
+    return arr;
+}
+
+int main() {
+    int n = 1000000;
+    int *arr = generateOrderedArray(n);
+
+    clock_t startTime = clock();
+    for(int i = 0; i < n; i++) {
+        assert(i == binarySearch(arr, n, i));
+    }
+    clock_t endTime = clock();
+
+    cout << "binarySearch test complete." << endl;
+    cout << "time cost: " << double(endTime-startTime)/CLOCK_PER_SEC << "s" << endl;
+    return 0;
+}
+
+
+移动数组的正负元素
+给定一个整数数组 nums，实现一个函数将所有的正整数移动到数组的左边，所有的负整数移动到数组的右边。
+示例：
+输入：[6, 4, -3, 5, -2, -1, 0, 1, -9];
+输出：[6, 4, 1, 5, 0, -1, -2, -3, -9];
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+// double pointer 双指针
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+class Solution {
+public:
+    void moveElements(vector<int>& nums) {
+        
+        int left = 0;
+        int right = nums.size()-1;
+        while (left < right) {
+            while(nums[left] >= 0)
+                left++;
+            while(nums[right] < 0) {
+                right--;
+            }
+            if (left < right) {
+                swap(nums[left], nums[right]);
+            }
+            
+            left++;
+            right--;
+        }
+        
+        return;
+    }
+};
+
+
+
+LeetCode 283 Move Zeroes
+给定一个数组 nums，写一个函数，将数组中所有的 0 移到数组的末尾，而维持其他所有非 0 元素的相对位置。
+
+示例：
+输入：[0, 1, 0, 3, 12]
+输出：[1, 3, 12, 0, 0]
+
+#include<iostream>
+#include<vector>
+
+using namespace std;
+
+// Time Complexity: O(n)
+// Space Complexity: O(n)
+class Solution {
+public:
+    void moveZeroes(vector<int>& nums) {
+        vector<int> nonZeroElements;
+
+        for(int i = 0; i < nums.size(); i++) {
+            if(nums[i]) {
+                nonZeroElements.push_back(nums[i]); // 将所有非零元素进行存储
+            }
+        }
+        
+        for(int i = 0; i < nonZeroElements.size(); i++) {
+            nums[i] = nonZeroElements[i];          // 将所有非零元素放到 nums 中
+        }
+        
+        for(int i = nonZeroElements.size(); i < nums.size(); i++ ) {
+            nums[i] = 0;                          // 用 0 来填充
+        }
+    }
+}
+
+
+// 优化1
+// Time complexity: O(n)
+// Space Complexity: O(1)
+class Solution {
+public:
+    void moveZeros(vector<int>& nums) {
+        
+        // 遍历到第 i 个元素后，保证 [0 … i] 中所有非0元素都按照顺序排列在 [0 … k) 中
+        int k = 0;
+        for(int i = 0; i < nums.size(); i++) { 
+            if(nums[i]) {
+                nums[k] = nums[i];
+                k++;
+            }
+        }
+
+        // 将 nums 中剩余的位置置为 0
+        for(int i = k; i < nums.size(); i++) { 
+            nums[i] = 0;     
+        }
+    }
+}
+
+
+// 优化2
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+class Solution {
+public:
+    void moveZeros(vector<int>& nums) {
+        // 遍历到第 i 个元素后，保证 [0 … i] 中所有非 0 元素，都按照顺序排列在 [0 … k) 中，
+           同时 [k … i] 中的元素为 0
+        int k = 0;
+        for(int i = 0; i < nums.size(); i++) { 
+            if(nums[i]) {         
+                if(i != k) {
+                    swap(nums[k], nums[i]);
+                }
+                k++;
+            }
+        }
+    }
+}
+
+
+
+Leetcode 26 Duplicate from Sorted Array
+给定一个有序数组，你需要在原地删除重复出现的元素，使得每个元素只出现一次，返回去重后数组的新长度。
+不要使用额外的数组空间，你必须在原地修改输入数组，并在使用 O(1) 额外空间的条件下完成。
+
+示例：
+输入：nums = [1, 1, 2]
+输出：2，
+并且原数组 nums 的前两个元素被修改为 1, 2。
+你不需要考虑数组中超出新长度后面的元素。
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+// 双指针技术
+// Time Complexity:  O(n)
+// Space Complexity: O(1)
+class Solution {
+private:
+    int nextDifferentCharacterIndex(const vector<int> &nums, int p){
+        for( ; p < nums.size(); p++) {
+            if(nums[p] != nums[p-1])
+                break;
+        }
+
+        return p;
+    }
+
+public:
+    int removeDuplicates(vector<int>& nums) {
+        if(nums.size() == 0)
+            return 0;
+        
+        int i = 1;       // 从索引为 1 的位置开始存放元素
+        int index = nextDifferentCharacterIndex(nums, 1);
+        while(index < nums.size()) {
+            nums[i] = nums[index];
+            i++;
+            index = nextDifferentCharacterIndex(nums, index+1);
+        }
+
+        return i;
+    }
+};
+
+// 双指针技术
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+class Solution {
+public:
+    int removeDuplicates(vector<int>& nums) {
+        if(nums.size() == 0)
+            return 0;
+
+        int slow = 0;
+        int fast = 1;
+        while(fast < nums.size()) {
+            if(nums[slow] != nums[fast]) {
+                slow++;
+                nums[slow] = nums[fast];
+                
+            }
+            fast++;
+        }
+
+        return slow+1;
+    }
+};
+
+
+
+Leetcode 27 remove Element
+给定一个数组 nums 和一个数值 val，你需要原地移除所有等于 val 的元素删除，并返回移除后数组的新长度。
+
+注意：
+不要使用额外的数组空间，你必须仅使用 O(1) 额外空间并原地修改输入数组。
+你不需要考虑数组中超出新长度后面的元素。
+
+示例：
+输入：nums = [3, 2, 2, 3], val = 2
+输出：2
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+// Two pointers 双指针技术
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+
+class Soluttion {
+public:
+    int removeElement(vector<int>& nums, int val) {
+        int res = 0;
+        for(int i = 0; i < nums.size(); i++) {
+            if(nums[i] != val) {
+                nums[res++] = nums[i]
+            }
+        }
+        
+        return res;
+    }
+};
+
+
+
+Leetcode 80 Remove Duplicate from Sorted Array
+给定一个有序数组，你需要在原地删除重复出现的元素，使得每个元素最多出现两次，返回移除后数组的新长度。
+
+注意：
+不要使用额外的数组空间，你必须在原地修改输入数组并在使用 O(1) 额外空间的条件下完成。
+
+示例：
+输入：nums = [1, 1, 1, 2, 2, 3]
+输出：5，且 nums = [1, 1, 2, 2, 3]
+
+输入：nums = [0, 0, 1, 1, 1, 2, 2, 3]
+输出：5，且 nums = [0, 0, 1, 1, 2, 2, 3]
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+// Ad-Hoc
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+class Solution {
+private:
+    // 从索引 j 开始查找与 nums[j] 不同的第一个元素，返回其索引
+    int findNextDifferentIndex(const vector<int>& nums, int j) {
+        for(int i = j; i < nums.size(); i++) {
+            if(nums[i] != nums[j])
+                return i;
+        }
+
+        return nums.size();
+    }
+public:
+    int removeDuplicates(vector<int>& nums) {
+        // 双指针
+        int slow = 0;
+        int fast = 0;
+
+        while(fast < nums.size()) {
+            int i = findNextDifferentIndex(nums, fast);
+            
+            // 最多保留 2 个
+            int len = min(2, i-fast);
+            for(int k = 0; k < len; k++) {
+                nums[slow+k] = nums[fast];
+            }
+
+            slow += len;
+            fast = i;
+        }
+
+        return slow;
+    }
+};
+
+
+
+Leetcode 75 Sort Colors
+给定一个有 n 个元素的数组，数组中元素的取值只有 0，1，2 三种可能，为这个数组排序。
+
+注意：
+不能使用代码库中的排序函数来解决这道题。
+
+示例：
+输入：[2, 0, 2, 1, 1, 0, 0]
+输出：[0, 0, 0, 1, 1, 2, 2]
+
+#include <iostream>
+#include <vector>
+#include <cassert>
+
+using namespace std;
+
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+class Solution {
+public:
+    void sortColors(vector<int>& nums) {
+        // 计数排序：分别统计 0，1，2 三个元素出现的次数
+        int count[3] = {0}; 
+        for(int i = 0; i < nums.size(); i++) {
+            count[num[i]]++;
+        }
+
+        int index = 0;
+
+        // 存放 0
+        for(int i = 0; i < count[0]; i++) {
+            nums[index] = 0;
+            index++;
+        }
+
+        // 存放 1
+        for(int i = 0; i < count[1]; i++) {
+            nums[index] = 1;
+            index++;
+        }
+        
+        // 存放 2
+        for(int i = 0; i < count[2]; i++) {
+            nums[index] = 2;
+            index++;
+        }
+    }
+}
+
+// 简化上面的代码
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+class Solution {
+public:
+    void sortColors(vector<int>& nums) {
+        int count[3] = {0};
+        for(int i = 0; i < nums.size(); i++) {
+            count[nums[i]]++;
+        }
+
+        int index = 0;
+        for(int i = 0; i < 3; i++) {
+            for(int j = 0; j < count[i]; j++) {
+                nums[index++] = i;
+            }
+        }
+
+        return;
+    }
+};
+
+
+// 优化：三路快排，只遍历的数组一遍
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+class Solution {
+public:
+    void sortColors(vector<int>& nums) {
+        int count[3] = {0};         // 用来存放 0，1，2 三个元素出现的次数
+
+        int zero = -1;              // nums[0 … zero] 的区间存放 0，
+                                    // nums[zero+1 … two-1]的区间存放 1；
+        int two = nums.size();      // [two … n-1] 的区间存放 2；
+        int i = 0;
+
+        while(i < two) {
+            if(nums[i] == 0) {
+                zero++;
+                swap(nums[i], nums[zero]);
+                i++;
+            } else if (nums[i] == 2) {
+                two--;
+                swap([nums[i],nums[two]);
+            } else {
+                assert(nums[i] == 1);
+                i++;
+            }
+        }
+    }
+}
+
+
+
+Leetcode 88 Merge Sorted Array
+给定两个有序整型数组 nums1，nums2，将 nums2 的元素归并到 nums1 中。
+
+注意：
+初始化 nums1 和 nums2 的元素数量分别为 m 和 n。
+可以假设 nums1 有足够的空间来保存 num2 中的元素。
+
+#include <iostream>
+#include <vector>
+#include <cassert>
+
+using namespace std;
+
+// 方法一：使用系统 sort 函数
+// Time complexity: O(nlogn)
+// Space complexity: O(1)
+class Solution {
+public:
+    void merge(vector<int>& nums1, int m, vector<int>& nums2, int n) {
+        assert(nums1.size() == m + n && nums2.size() == n);
+        
+        for(int i = 0; i < n; i++) {
+            nums1[m+i] = nums2[i];
+        }
+
+        sort(nums1.begin(), nums1.end());
+        
+        return;
+    }
+};
+
+
+// 方法二：标准的合并过程
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+
+class Solution {
+public:
+    void merge(vector<int>& nums1, int m, vector<int>& nums2, int n) {
+
+        assert(nums1.size() == m + n && nums2.size() == n);
+
+        // 将 nums1 的元素整体后移，将前面的 n 个位置让出
+        for(int i = n + m - 1; i >= n ; i--)
+            nums1[i] = nums1[i-n];
+
+        int i = n;                            // 指向 nums1 中第一个待合并的元素
+        int j = 0;                            // 指向 nums2 中第一个待合并的元素
+
+        int k = 0;                            // 选中的元素放入的位置
+        while( k < n + m ) {
+            if(i >= n+m)                      // 若 nums1 中的有效元素已完全合并完成
+                nums1[k++] = nums2[j++];
+            else if(j >= n)                   // 若 nums2 中的元素已合并完成
+                nums1[k++] = nums1[i++];
+            else if( nums1[i] < nums2[j])
+                nums1[k++] = nums1[i++];
+            else
+                nums1[k++] = nums2[j++];
+        }
+    }
+};
+
+
+
+Leetcode 215 Kth Largest Element in an Array（经典）
+在一个整数序列中寻找第 K 大的元素。
+
+示例：
+输入：[3, 2, 1, 5, 6, 4]，k = 2
+输出：5
+#include <iostream>
+#include <vector>
+#include <ctime>
+
+using namespace std;
+
+// 方法一：使用系统 sort 函数
+// Time Complexity: O(nlogn)
+// Space Complexity: O(1)
+class Solution {
+public:
+    int findKthLargest(vector<int>& nums, int k) {
+        // 指定内部的比较函数为从大到小排列
+        sort(nums.begin(), nums.end(), [](int a, int b) {return a > b;});
+        return nums[k-1];
+    }
+}
+
+
+// 方法二：使用最小堆存储 k 个最大的元素
+// Time Complexity: O(nlogk)
+// Space Complexity: O(k)
+class Solution {
+public:
+    int findKthLargest(vector<int>& nums, int k) {
+        priority_queue<int, vector<int>, greater<int>> pq;
+        
+        for(int i = 0; i < nums.size(); i++) {
+            if(pq.size() < k) {
+                pq.push(nums[i]);
+            } else {
+                pq.pop();
+                pq.push(nums[i]);
+            }
+        }
+        
+        return pq.top();    // 返回堆顶元素，即为第 K 大元素
+    }
+}
+
+
+// 方法三：利用快排 partition 操作中，将 pivot 放置在了其正确的位置上的性质。
+// Time Complexity: O(n)
+// Space Complexity: O(logn)
+class Solution {
+private:
+    int findKthLargest(vector<int>& nums, int l, int r, int k) {
+        if(l == r) {
+            return nums[l];
+        }
+        
+        int p = partition(nums, l, r);
+        
+        if (p == k) {
+            return nums[k];
+        } else if (k < p) {
+            return findKthLargest(nums, l, p-1, k);
+        } else {
+            return findKthLargest(nums, p+1, r, k);
+        }
+    }
+
+    // 将 nums 数组分为 2 部分
+    int partition(vector<int>& nums, int l, int r) {
+        int p = l+ rand()%(r-l+1);    // 在 l … r 中间随机找个位置，作为分割点
+        swap(nums[l], nums[p]);
+        
+        int gt = l+1;
+        
+        // 使得大于 nums[p] 的元素在前，小于 nums[p] 的元素在后
+        for(int i = l + 1; i <= r; i++) {   
+            if(nums[i] > nums[l]) {
+                swap(nums[i], nums[gt]);
+                gt++;
+            }
+        }
+
+        swap(nums[l], nums[lt-1]);
+
+        return lt-1;
+    }
+
+public:
+    int findKthLargest(vector<int>& nums, int k) {
+        srand(time(NULL));
+        return findKthLargest(nums, 0, nums.size()-1, k-1);
+    }
+};
+
+
+
+Leetcode 167 Two Sum II - Input array is sorted
+给定一个有序整型数组和一个整数 target，在其中寻找两个元素，使其和为 target。返回这两个数的索引。
+
+示例：
+输入：[2, 7, 11, 15]，target = 9
+输出：[1, 2]
+即数字 2、7 的索引（索引从1开始计算）
+
+#include <iostream>
+#include <vector>
+#include <cassert>
+#include <stdexcept>
+
+using namespace std;
+
+// 双指针，指针对撞技术
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+class Solution {
+public:
+    vector<int> twoSum(vector<int>& numbers, int target) {
+        
+        int left = 0;    // 指针对撞：双索引技术
+        int right = numbers.size() - 1;
+
+        while(left < right) {
+            if(numbers[left] + numbers[right] == target) {
+                return vector<int> { left+1, right+2 };    // 返回一个匿名的 vector
+
+                // vector<int> res = {left+1, right+2};
+                // return res;
+            } else if(numbers[left] + numbers[right] < target) {
+                left ++;
+            } else {
+                right --;
+            }
+        }
+
+        throw invalid_argument("The input has no solution"); // 无解时，抛出异常
+    }
+};
+
+
+
+Leetcode 11 Container With Most Water 盛最多水的容器 （经典）
+给定一个非负整数数组 a1, a2, a3, … , an. 每一个整数表示一个竖立在坐标轴 x 位置上的一堵高度为 ai 的墙，选择两堵墙，使得它们与 x 轴共同构成的容器可以容纳给多的水。
+
+示例：
+输入：[1, 8, 6, 2, 5, 4, 8, 3, 7]
+输出：49
+在此情况下，容器能容纳水（表示为蓝色部分）的最大值为 49。
+
+#include <iostream>
+#include <vector>
+#include <cassert>
+
+using namespace std;
+
+// Two Pointers 双指针
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+
+class Solution {
+public:
+    int maxArea(vector<int>& height) {
+        assert(height.size() >= 2);
+
+        int l = 0;
+        int r = height.size() -1;
+        int area = 0;
+
+        while(l < r){
+            area = max(area, min(height[l], height[r])*(r-l));
+
+            if(height[l] < height[r])
+                l++;
+            else
+                r--;
+        }
+
+        return area;
+    }
+};
+
+
+
+Leetcode 125 Valid Palindrome
+给定一个字符串，只看其中的数字和字母，忽略大小写，判断这个字符串是否为回文串？（从左到右看跟从右到左看是一样的）
+
+示例：
+输入："A man , a plan, a cancel: Panama"
+输出：true
+
+输入："race a car"
+输出：false
+
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+// Two Pointers 双指针
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+
+class Solution {
+private:
+    int next_alpha_numeric(const string& s, int index) {
+        for(int i = index; i < s.size(); i++)
+            if(isalnum(s[i]))
+                return i;
+
+        return s.size();
+    }
+
+    int prev_alpha_numeric(const string& s, int index) {
+        for(int i = index; i >= 0; i--)
+            if(isalnum(s[i]))
+                return i;
+
+        return -1;
+    }
+
+public:
+    bool isPalindrome(string s) {
+        int i = next_alpha_numeric(s, 0);
+        int j = prev_alpha_numeric(s, s.size()-1);
+
+        while(i <= j) {
+            if(tolower(s[i]) != tolower(s[j]))
+                return false;
+
+            i = next_alpha_numeric(s, i+1);
+            j = prev_alpha_numeric(s, j-1);
+        }
+
+        return true;
+    }
+};
+
+
+
+Leetcode 209 Minimum Size Subarray Sum
+给定一个整型数组和一个数字 s，找到数组中最短的一个连续子数组，使得连续子数组的数字和 sum >= s，返回这个最短的连续子数组的长度。
+
+示例：
+输入：[2, 3, 1, 2, 4, 3]，s = 7;
+输出：2,    
+解释：[4, 3]
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+// 双指针，滑动窗口
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+class Solution {
+public:
+    vector<int> minSubArrayLen(vector<int>& nums, int s) {
+        
+        int left = 0, right = -1;    // 滑动窗口：nums[left … right] 为滑动窗口
+        int sum = 0;
+
+        int len = INT_MAX;
+
+        while(left < nums.size()) {
+            if(right < nums.size() -1 && sum < s) {
+                right++;
+                sum += nums[right];
+            } else if(sum >= s) {
+                sum -= nums[left];
+                left++;
+            }
+            
+            if(sum >= s) {           // 若存在满足题意的子集，则更新最小长度len
+                len = min(len, right-left+1);
+            }
+        }
+
+        if(len == INT_MAX)           // 处理没有满足题意的子集的情况
+            return 0;
+
+        return len;
+    }
+}
+
+
+
+LeetCode 3 Substring Without Repeating Characters
+在一个字符串中寻找没有重复字母的最长子串.
+
+示例：
+输入："abcabcbb"
+输出：3
+
+输入："bbbbb"
+输出：1
+
+输入："pwwkew"
+输出：3
+
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+// 双指针，滑动窗口
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+class Solution {
+public:
+    int lengthOfLongestSubstring(string s) {
+
+        int last[256] = {-1};    // 以字符 s[i] 为索引，记录其在 s 中最新出现的位置
+        memset(last, -1, sizeof(last));         // 初始化内存空间
+
+        int l = 0, r = -1;                      // sliding window: s[l...r]
+        int res = 0;
+        while(r + 1 < s.size()){
+            r++;
+
+            if(last[s[r]] != -1)
+                l = max(l, last[s[r]] + 1);     // 更新左边界的位置
+
+            res = max(res, r-l+1);
+
+            last[s[r]] = r;                     // 记录字母 s[r] 在字符串中出现的位置
+        }
+
+        return res;
+    }
+
+}
+
+
+
+Leetcode 438 Find All Anagrams in a string
+给定一个字符串 s 和一个非空字符串 p，找出 p 中的所有是 s 的 anagram 字符串的子串，返回这些子串的起始索引。
+
+示例：
+输入：S = "cbaebabacd" ，p = "abc"
+输出：[0, 6]
+
+输入：S = "abab" ， p = "ba"
+输出：[0, 1, 2]
+
+
+
+Leetcode 76 Minimum Window Substring
+给定一个字符串 S 和 T ，在 S 中寻找最短的子串，包含 T 中的所有的字符。
+示例：
+输入：S = "ADOBECODEBANC" ,  T = "ABC"
+输出：”BANC"
+
+
