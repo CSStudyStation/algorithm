@@ -1,0 +1,1546 @@
+C++ 语法基础
+
+cout
+cout << x << endl;    // 输出变量 x 的值，endl 为回车符。
+cout << "x + y =" <<  x+y  << endl;     // 输出变量 x + y 的值。
+
+cin
+cin >> x;             // 输人到 x 变量中
+cin >> x >> y;
+
+string name;
+getline(cin, name);   // 通过键盘输入，可输入回车符
+
+优点：不用关注占位符，不用关注数据类型。
+
+
+使用 namespace 定义命名空间
+* 命名空间的名字是不可以重复的;
+* 通过命名空间区分具有相同名字的变量、函数;
+
+#include <iostream>    // 引用头文件
+using namespace std;   // 只有引用头文件和使用 std 命名空间，才能使用 cin、cout、endl;
+
+namespace A 
+{
+    int x = 1;
+
+    void fun() {
+        // 不写 using namespace std 时，需要使用 std::cout 和 std::endl
+        cout << "A" << endl; 
+    }
+}
+
+namespace B 
+{
+    int x = 2;
+
+    void fun() {
+        cout << "B" << endl;
+    }
+
+    void fun2() {
+        cout << "C" << endl;
+    }
+}
+
+int main(void) {
+
+    cout << A::x << endl;     // 输出命名空间 A 中 x 的值
+    B::fun();                 // 调用命名空间 B 中的 fun() 函数
+    B::fun2();      
+    
+    // 等价于    
+    using namespace B;    
+    fun2();
+
+    return 0;
+}
+
+类是抽象的概念，对象是具体的事物。
+
+C ++ 中共 3 个访问限定符
+* public：公共的;
+* protected：受保护的;
+* private：私有的;
+
+#include <stdlib.h>
+#include <iostream>
+
+using namespace std;
+
+// 定义类
+class Coordinate {
+public:
+
+    // 属性（数据成员）
+    int x; 
+    int y;
+
+    // 方法（成员函数）
+    void printX() {
+        cout << x << endl;
+    }
+
+    void printY() {
+        cout << y << endl;
+    }
+
+};
+
+int main()
+{
+    // 从栈实例化对象，不需要手动管理内存
+    Coordinate coor;    // 通过 类名+变量名 即可从栈中实例化对象
+    coor.x = 20;        // 访问对象的数据成员
+    coor.y = 50;
+    coor.printX();      // 调用成员函数
+    coor.printY();
+    
+    Coordinate coors[20];    // 从栈中实例化对象数组
+
+
+
+    // 从堆实例化对象，需要手动管理内存
+    Coordinate *p = new Coordinate();
+
+    // 处理分配内存失败的情况
+    if( NULL == p ) 
+    {
+         return 0;
+    } 
+
+    p -> x = 20;
+    p -> y = 50;
+    p -> printX();
+    p -> printY();
+
+    Coordinate *q = new Coordinate[20];    // 从堆中实例化对象数组
+    for(int i = 0; i < 20; i++) {
+        q[i] -> x = i;
+        q[i] -> y = i;
+        q[i] -> printX();
+        q[i] -> printY();
+    }
+
+    // 释放内存
+    delete p;
+    p = NULL;
+
+    delete []q;
+    q = NULL;
+    
+    system("pause");
+    return 0;
+}
+
+字符串数组操作函数
+strlen、strcpy、strcmp、strcat、strstr、strncpy、strncmp;
+
+字符串类型：string
+
+#include <string>;
+
+string 初始化
+* string s1;         s1为空串
+* string s2(”ABC");  用字符串字面值初始化 s2
+* string s3(s2);     将 s3 初始化为 s2 的一个副本
+* sting s4(n, 'c');  将 s4 初始化为 n 个字符 'c'
+
+string 常用操作
+* s.empty();         若 s 为空串，则返回 true，否则返回 false
+* s.size();          返回 s 中字符串的个数
+* s[n];              返回 s 中位置为 n 的字符，位置从 0 开始
+* s1 + s2;           将两个字符串连接成新的字符串，返回新生成的字符串
+* s1 = s2;           把 s1 的内容替换为 s2 的副本
+* v1 == v2;          判断相等，相等返回 true，否则返回 false
+* v1 != v2;          判断不等，不等返回 true，否则返回 false
+
+string s1 = "hello";
+string s2 = "world";
+string s3 = s1 + s2;
+string s4 = "hello" + s2;
+string s5 = "hello" + s2 + "world";
+
+string s6 = "hello" + "world"; // 字符串常量不能直接相加
+
+
+引用类型
+* 引用是变量的别名；
+* 也就是说，不对实参做任何拷贝，即直接在实参上进行操作；
+#include <iostream>
+using namespace std;
+
+typedef struct {
+    int x;
+    int y;
+}Coor;
+
+// 指针作为函数的参数
+void fun(int *a, int *b) {
+    int c = 0;
+    c = *a;    
+    *a = *b;
+    *b = c;
+}
+// 在 C 语言中的调用
+int x = 10, y = 20;
+fun(&x, &y);
+
+
+// 引用作为函数参数
+void fun1(int &a, int &b) {
+    int c = 0;
+    c = a;
+    a = b;
+    b = c;
+}
+// 在 C 语言中的调用
+int x = 10, y = 20;
+fun1(x, y);
+
+int main() {
+
+    // 基本数据类型的引用
+    int a = 3;
+    int &b = a;    // 引用必须初始化，变量 b 是 a 的别名
+
+    b = 10;
+    cout << a << endl;
+
+    // 结构体类型的引用
+    Coor c1;
+    Coor &c = c1;
+    c.x = 10;
+    c.y = 20;
+    cout << c1.x << " ," << c1.y << endl;
+
+    // 指针类型的引用 (类型 *&指针引用名 = 指针;)
+    int d = 10;
+    int *p = &d;
+    int *&q = p;    // 给 p 起别名 q 
+
+    *q = 20;
+    cout << d << endl;
+
+    // 引用作为函数参数
+    int x = 10;
+    int y = 20;
+    fun1(x, y);
+    
+    return 0;
+}
+
+
+const 常量
+const int x = 3; // 定义常量
+
+// 以下两种写法等价
+const int *p = NULL;
+int const *p = NULL;
+
+int *const p = NULL;
+
+// 以下两种写法等价
+const int * const p = NULL;
+int const * const p = NULL;
+
+
+// 示例说明
+int x = 3;
+const int *p = &x;    // 此时 const 修饰的是 int 值。因为 *p 是一个 int 值，修饰为常量，*p 的值不能改变
+p = &y; // true
+*p = 4; // false
+
+
+int x = 3;
+int * const p = &x;   // 此时 const 修饰指针 p 的指向。因为 p 是一个指针，修饰为常量，指向不能改变
+p = &y; // false
+
+const int x = 3;             // 此时 const 修饰的是 int 值，x 的值不能变
+const int * const p = &x;    // 此时 p 不能指向其他地址，也不能通过 *p 改变 x 的值
+p = &y;                      // false
+*p = 4;                      // false
+
+// const 与引用
+int x = 3;
+const int &y = x;            // 此时 const 将 y 修饰为是常量，不能改变 y 的值
+x = 10;                      // true
+y = 20;                      // false
+
+// 权限问题
+const int x = 3;
+
+// 这种写法是错误的，因为 x 已经设置为常量，而指针 p 是可以读写的，用一个权限大的指针去指向一个权限小的变量 x，逻辑上是不可以的，会有风险。
+int *p = &x;    
+
+
+函数特性
+* 函数入参默认值，要求写在参数列表的最右边（没有对应的实参时，使用默认值；否则实参覆盖掉默认值）;
+* 函数重载：在相同的作用域内，使用同一函数名定义多个函数，多个函数的参数个数或参数类型不同;
+
+#include <stdlib.h>
+
+using namespace std;
+
+// 函数声明时给出默认值，函数定义时不用写默认值
+void fun(int i = 5, int j = 5, int k = 10);
+
+int main() {
+    fun(20);            // 此时 i = 20, j = 5, k = 10
+    fun(20, 30);        // 此时 i = 20， j = 30, k = 10
+    fun(20, 30, 40);    // 此时 i = 20, j = 30, k = 40
+
+    system("pause");
+    return 0;
+}
+
+// 函数定义
+void fun(int i, int j, int k) {
+    cout << i << ", " << j << ", " << k << endl;
+}
+
+函数重载
+int getMax(int x, int y, int z) {
+    // to do
+}
+
+double getMax(double x, double y) {
+    // to do 
+}
+
+// 思考：编译器如何区分重载的函数 ？
+int getMax(int x, int y, int z);        ==>   getMax_int_int_int(int,int,int);
+double getMax(double x, double y);      ==>   getMax_double_double(double, double);
+
+
+内联函数（执行效率高）
+* 在编译时，将函数体代码和实参替换掉函数调用语句。
+* 逻辑简单、调用频繁的函数，建议使用内联函数。
+* 对于复杂的函数，即使写上关键字 inline ，也会被系统按照普通的函数进行调用。
+* 递归函数无法使用内联方式进行编译。
+inline void fun()
+{
+    cout << "Hello" << endl;
+}
+
+
+内存管理
+* 申请
+* 释放
+
+C 语言
+    * 申请 void * malloc( size_t size );
+    * 释放 void free( void *memblock );
+C ++
+    * 申请 new
+    * 释放 delete
+注意：配套使用，C，C ++ 对内存的管理代码不要混搭。
+
+// 整型变量
+int *p = new int(10);    
+if(p == NULL) {
+    // 内存分配失败，进行异常处理
+}
+
+delete p;
+p = NULL;
+
+
+// 整型数组
+int *p = new int[1000];    
+if( p == NULL ) {
+    // 内存分配失败，进行异常处理
+}
+
+delete []p;
+p = NULL;
+
+类内定义
+* 成员函数的声明和定义写在一起;
+* 编译器将以内联函数的方式进行优先编译;
+* 对于复杂的成员函数，将按照普通的函数进行编译;
+
+class Student {
+public:
+    void setAge(int _age) { age = _age }
+    int getAge() { return age }
+    void study() { cout << "study" << endl; }
+
+private:
+    string name;
+    int age;
+};
+
+
+类外定义
+* 同文件类外定义;
+* 分文件类外定义; 一个类由 .h 和 .cpp 两个文件组成（项目中常用）
+
+// 同文件类外定义
+------------------------ Car.cpp ----------------------
+class Car {
+public:
+    void run();
+    void stop();
+    void changeSpeed();
+};
+
+void Car::run() { cout << "run" << endl; }
+void Car::stop() { cout << "stop" << endl; }
+void car:: changeSpeed() { cout << "change" << endl; }
+
+
+构造函数的规则和特点
+* 构造函数在对象实例化时被自动调用;
+* 构造函数与类名同名，且没有返回值;
+* 构造函数可以重载;
+* 实例化对象时仅用到一个构造函数;
+* 当用户没有定义构造函数时，编译器自动生成一个构造函数;
+
+// 分文件类外定义
+-------------------------- Student.h ---------------------------
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Student
+{
+public:
+    Student();                          // 无参数的构造函数
+    Student(string name, int age = 6);  // 带参数的构造函数，参数可以设置默认值
+
+    void setName(string name);
+    string getName();
+
+    void setAge(int age);
+    int getAge();
+
+private:
+    string m_strName;
+    int m_iAge;
+};
+
+-------------------------- Student.cpp ------------------------
+#include "Student.h"
+
+    Student::Student()                         // 无参数的构造函数
+    {
+        m_strName = "jim";
+        m_iAge = 0;
+    }
+    
+    Student::Student(string name, int age)     // 带参数的构造函数
+    {
+        m_strName = name;
+        m_iAge = age;
+    }
+
+    void Student::setName(string name)
+    {
+        m_strName = name;
+    }
+
+    string Student::getName()
+    {
+        return m_strName;
+    }
+
+    void Student::setAge(int age)
+    {
+        m_iAge = age;
+    }
+
+    int Student::getAge()
+    {
+        return age;
+    }
+
+
+
+int main(void)
+{
+    Student stu1;
+    Student stu2("wang", 10);
+    Student stu3("li");
+
+    cout << stu1.getName() << " " << stu1.getAge() << endl;
+    cout << stu2.getName() << " " << stu2.getAge() << endl;
+    cout << stu3.getName() << " " << stu3.getAge() << endl;
+    return 0;
+}
+
+
+默认构造函数
+* 在实例化对象时，不需要传递参数的构造函数；
+-------------------------- Student.h ---------------------
+class Student
+{
+public:
+    Student() {};    // 默认构造函数
+    Student(string name = "wang");    // 默认构造函数
+
+private:
+    String m_strName;
+};
+
+
+
+int main(void)
+{
+    Student stu1();       // 调用默认构造函数，从栈中实例化
+
+    Student *p = NULL;
+    p = new Student();    // 调用默认构造函数，从堆中实例化
+
+    delete p;
+    p = NULL;
+
+    return 0;
+}
+
+
+构造函数初始化列表
+* 初始化列表先于构造函数执行；
+* 初始化列表只能用于构造函数；
+* 初始化列表可以同时初始化多个数据成员，效率高，速度快；
+
+-------------------- Student.h ---------------------
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+class Student
+{
+public:
+    // 带参数的构造函数。所有参数都设置默认值，使这个构造函数变成默认构造函数
+    Student(string name = "jim", int age = 1); 
+
+    void setName(string name);
+    string getName();
+    void setAge(int age);
+    int getAge();
+
+private:
+    string m_strName;
+    int m_iAge;
+};
+
+----------------------- Student.m ------------------
+#include "student.h"
+
+Student::Student(string name, int age) : m_strName(name), m_iAge(age) {} // 使用初始化列表给数据成员赋值，给数据成员赋值时只能用括号
+
+void Student::setName(string name) {
+    m_strName = name;
+}
+
+string Student::getName() {
+    return m_strName;
+}
+
+void Student::setAge(int age) {
+    m_iAge = age;
+}
+
+int Student::getAge() {
+    return m_iAge;
+}
+
+
+int main(void) {
+    Student stu1;               // 调用默认的构造函数
+ // Student stu1("merry", 12);
+    cout << stu1.getName() << " " << stu1.getAge() << endl;
+    
+    system("pause");
+    return 0;
+}
+
+
+初始化列表的必要性
+class Circle
+{
+public:
+    Circle()
+    {
+        m_dPi = 3.14;           // 这样写编译器会报错
+    }
+
+    Circle() : m_dPi(3.14) {}   // 只能使用初始化列表
+
+private:
+    const double m_dPi;
+};
+
+
+拷贝构造函数
+* 格式定义：类名(const 类名& 变量名)；
+* 如果没有自定义的拷贝构造函数，则系统自动生成一个默认的拷贝构造函数；
+* 当采用直接初始化或复制初始化实例对象时，系统自动调用拷贝构造函数；
+* 拷贝构造函数的参数是确定的，不能重载；
+
+-------------------------- Student.h ---------------------
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Student
+{
+public:
+    Student();                                  // 无参数的构造函数
+    Student(string name = "jim", int age = 1);  // 带参数的构造函数。所有参数都设置默认值，使这个构造函数变成默认构造函数
+
+    void setName(string name);
+    string getName();
+    void setAge(int age);
+    int getAge();
+
+private:
+    string m_strName;
+    int m_iAge;
+};
+
+
+-------------------------- Student.cpp ---------------------
+#include "Student.h"
+
+Student::Student()  // 无参数的构造函数
+{
+    m_strName = "jim";
+    m_iAge = 0;
+}
+
+// 带参数的构造函数，因为声明的时候已经指定了默认值，所以定义的时候就不用再次指定默认值了
+Student::Student(string name, int age) 
+{
+    m_strName = name;
+    m_iAge = age;
+}
+
+ // 拷贝构造函数
+Student::Student(const Student &stu)   
+{
+    cout << "Student(const Student &stu)" << endl;
+}
+
+void Student::setName(string name)
+{
+    m_strName = name;
+}
+
+string Student::getName()
+{
+    return m_strName;
+}
+
+void Student::setAge(int age)
+{
+    m_iAge = age;
+}
+
+int Student::getAge()
+{
+    return m_iAge;
+}
+
+-------------------------------------------------
+
+int main(void)
+{
+    Student stu1;
+    Student stu2 = stu1;    // 调用拷贝构造函数
+    Student stu3(stu1);     // 调用拷贝构造函数
+
+    cout << stu1.getName() << " " << stu1.getAge() << endl;
+    cout << stu2.getName() << " " << stu2.getAge() << endl;
+    cout << stu3.getName() << " " << stu3.getAge() << endl;
+    return 0;
+}
+
+
+析构函数
+* 定义：~类名()；
+* 如果没有自定义的析构函数，系统会自动生成；
+* 析构函数在对象销毁时，会被自动调用；
+* 析构函数没有返回值、没有参数，也不能重载；
+
+
+对象数组
+-------------------------- Coordinate.h ----------------------------
+class Coordinate {
+public:
+    Coordinate();
+    ~Coordinate();
+    
+    int m_iX;
+    int m_iY;
+};
+
+-------------------------- Coordinate.cpp -------------------------
+#include "Coordinate.h"
+#include <iostream>
+
+using namespace std;
+
+Coordinate::Coordinate() {
+    cout << "Coordinate" << endl;
+}
+
+Coordinate::~Coordinate() {
+    cout << "~Coordinate" << endl;
+}
+
+
+-------------------------- demo.cpp ------------------------------
+#include <stdlib.h>
+#include <iostream>
+#include "Coordinate.h"
+
+using namespace std;
+
+int main(void) {
+    Coordinate coor[3];                                  // 从栈中创建对象数组，此处执行了 3 次构造函数
+    for(int i = 0; i < 3; i++) {
+        cout << coor[i].m_iX << ", " << coor[i].m_iY << endl;
+    }
+
+
+    Coordinate *p = new Coordinate[3];                  // 从堆中创建对象数组，此处执行了 3 次构造函数
+    for(int i = 0; i < 3; i++) {
+        cout << p[i].m_iX << ", " << p[i].m_iY << endl; // 通过对象访问数据成员
+
+        cout << p->m_iX << ", " << p->m_iY << endl;     // 通过指针访问数据成员
+        p += 1;
+    }
+    
+    p--;
+    p--;
+
+    delete [] p;    // 此处执行了 3 次析构函数
+    p = NULL;
+    system("pause");
+    return 0;
+}
+
+
+对象作为成员
+-------------------------- Coordinate.h ---------------------------
+class Coordinate {
+public:
+    Coordinate(int x, int y);
+    ~Coordinate();
+
+    void setX(int x);
+    int getX();
+    void setY(int y);
+    int getY();
+private:
+    int m_iX;
+    int m_iY;
+};
+
+
+-------------------------- Coordinate.cpp -------------------------
+#include "Coordinate.h"
+#include <iostream>
+
+using namespace std;
+
+Coordinate::Coordinate(int x, int y) {
+    m_iX = x;
+    m_iY = y;
+    cout << "Coordinate()" << endl;
+}
+
+Coordinate::~Coordinate() {
+    cout << "~ Coordinate()" << endl;
+}
+
+void Coordinate::setX(int x) {
+    m_iX = x;
+}
+
+int Coordinate::getX() {
+    return m_iX;
+}
+
+void Coordinate::setY(int y) {
+    m_iY = y;
+}
+
+int Coordinate::getY() {
+    return m_iY;
+}
+
+
+-------------------------- Line.h ------------------------------
+#include "Coordinate.h"
+
+class Line {
+public:
+    Line(int x1, int y1, int x2, int y2);
+    ~Line();
+
+    void setA(int x, int y);
+    Coordinate getA();
+    void setB(int x, int y);
+    Coordinate getB();
+private:
+    Coordinate m_coorA; // 对象作为数据成员
+    Coordinate m_coorB;
+};
+
+
+-------------------------- Line.cpp ----------------------------
+#include <iostream>
+
+using namespace std;
+
+Line::Line(int x1, int y1, int x2, int y2) : m_coorA(x1, y1) , m_coorB(x2, y2) { // 使用初始化列表
+    cout << "Line()" << endl;
+}
+
+
+Line::~ Line() {
+    cout << "~Line()" << endl;
+}
+
+void Line::setCoorA(int x, int y) {
+    m_coorA.setX(x);
+    m_coorA.setY(y);
+}
+
+Coordinate Line::getCoorA() {
+    return m_coorA;
+}
+
+void Line::setCoorB(int x, int y) {
+    m_coorB.setX(x);
+    m_coorB.setY(y);
+}
+
+Coordinate Line::getCoorB() {
+    return m_coorB;
+}
+
+void Coordinate::printInfo()  {
+    cout << "(" << m_coorA.getX() << "," << m_coorA.getY() << ")" << endl;
+    cout << "(" << m_coorB.getX() << "," << m_coorB.getY() << ")" << endl;
+}
+
+
+深拷贝与浅拷贝
+
+对象指针
+
+#include <iostream>
+#include <stdlib.h>
+
+using namespace std;
+
+class Coordinate {
+public:
+    Coordinate();
+    ~Coordinate();
+    int m_iX;
+    int m_iY;
+};
+
+
+int main(void) {
+    Coordinate *p1 = NULL;    // 对象指针 p1 先置为空，然后在赋值
+    p1 = new Coordinate;
+    p1->m_iX = 10;            // 通过对象指针访问数据成员 
+    p1->m_iY = 10;
+    
+    Coordinate *p2 = new Coordinate();    // p2 即为对象指针
+    p2->m_iX = 20;            // (*p).m_iX = 20;
+    p2->m_iY = 20;            // (*p).m_iY = 20;
+
+    delete p1;                // 释放内存
+    p1 = NULL;                // 为了安全，将指针置为空
+    
+    delete p2;
+    p2 = NULL;
+
+    Coordinate p3;            // 在栈中创建对象 p3   
+    Coordinate *p4 = &p3;     // 创建对象指针
+
+    p4->m_iX = 30;
+    p4->m_iY = 30;
+
+    cout << p4->m_iX << endl;
+    cout << p4->m_iY << endl;
+
+    system("pause");
+    return 0;
+}
+
+
+对象成员指针
+-------------------------- Coordinate.h ----------------------------
+class Coordinate {
+public:
+    Coordinate(int x, int y);
+    ~Coordinate();
+
+    void setX(int x);
+    int getX();
+    void setY(int y);
+    int getY();
+private:
+    int m_iX;
+    int m_iY;
+};
+
+
+-------------------------- Coordinate.cpp ----------------------------
+#include "Coordinate.h"
+#include <iostream>
+
+using namespace std;
+
+Coordinate::Coordinate(int x, int y) {
+    m_iX = x;
+    m_iY = y;
+    cout << "Coordinate()" << endl;
+}
+
+Coordinate::~Coordinate() {
+    cout << "~ Coordinate()" << endl;
+}
+
+void Coordinate::setX(int x) {
+    m_iX = x;
+}
+
+int Coordinate::getX() {
+    return m_iX;
+}
+
+void Coordinate::setY(int y) {
+    m_iY = y;
+}
+
+int Coordinate::getY() {
+    return m_iY;
+}
+
+
+-------------------------- Line.h ------------------------------
+#include "Coordinate.h"
+
+class Line {
+public:
+    Line(int x1, int y1, int x2, int y2);
+    ~Line();
+
+    void printInfo();
+private:
+    Coordinate *m_pCoorA; // 对象指针作为数据成员
+    Coordinate *m_pCoorB;
+};
+
+
+-------------------------- Line.cpp ----------------------------
+#include "line.h"
+#include <iostream>
+
+using namespace std;
+
+Line::Line(int x1, int y1, int x2, int y2) { 
+    m_pCoorA = new Coordinate(x1, y1);
+    m_pCoorB = new Coordinate(x2, y2);
+    cout << "Line()" << endl;
+}
+
+Line::~ Line() {
+    delete m_pCoorA;
+    m_pCoorA = NULL;
+
+    delete m_pCoorB;
+    m_pCoorB = NULL;
+
+    cout << "~ Line()" << endl;
+}
+
+void Coordinate::printInfo()  {
+    cout << "(" << m_pCoorA->getX() << "," << m_pCoorA->getY() << ")" << endl;
+    cout << "(" << m_pCoorB->getX() << "," << m_pCoorB->getY() << ")" << endl;
+}
+
+
+-------------------------- demo.cpp ----------------------------
+#include <stdlib.h>
+#include <iostream>
+#include "Line.h"
+
+using namespace std;
+
+int main(void) {
+    Line *p = new Line(1, 2, 3, 4);
+    p->printInfo();
+    
+    cout << sizeof(p) << endl;
+    cout << sizeof(Line) << endl;
+    
+    delete p;
+    p = NULL;
+    system("pause");
+    return 0;
+}
+
+
+this 指针
+* 指向对象自身的地址；
+* 其实编译器为每个成员函数传入了 this 指针；
+
+class Array {
+public:
+    Array(T *this, int len);    // this 是编译器默认的参数
+    ~Array(T *this);
+    void setLen(T *this, int len);
+    int getLen(T *this);
+private:
+    int len;
+};
+
+
+---------------------------- Array.h ---------------------------------
+class Array {
+public:
+    Array(int len);
+    ~Array();
+    void setLen(int len);
+    int getLen();
+    Array* printInfo();
+private:
+    int len;
+};
+
+--------------------------- Array.cpp -------------------------------
+#include <iostream>
+#include <stdlib.h>
+
+using namespace std;
+
+Array:: Array(int len) {
+    this->len = len;
+}
+
+Array:: ~Array() {
+}
+
+void Array::setLen(int len) {
+    this->len = len;
+}
+
+int Array::getLen() {
+    return len;
+}
+
+/*
+Array Array::printInfo() {
+    return *this;    // 这样返回的是一个临时对象，并非是 this 指向的对象
+}
+
+Array & Array::printInfo() {
+    return *this;    // 这样返回 this 指向对象的引用，即 this 指向的对象
+}
+*/
+
+Array * Array::printInfo() {
+    cout << this->len << endl;
+    cout << this << endl;
+    return this;     // 返回 this 指针
+}
+
+
+---------------------- demo.cpp ------------------------
+#include <iostream>
+#include <stdlib.h>
+#include "Array.h"
+
+using namespace std;
+
+int main (void) {
+    Array arr(10);
+    arr.printInfo();
+
+    cout << &arr << endl;
+    system("pause");
+    return 0;
+}
+
+
+const 再现江湖
+* 常数据成员；
+* 常成员函数；
+* 常对象只能调用常成员函数；
+------------------------ Coordinate.h ----------------------------
+class Coordinate {
+public:
+    Coordinate(int x, int y);
+    ~Coordinate();
+    
+    void changeX() const;    // 常成员函数
+    void changeX();
+private:
+    const int m_iX;          // 常基本数据成员，一旦初始化就不能再修改
+    const int m_iY;
+};
+
+------------------------ Coordinate.cpp -------------------------
+#include <iostream>
+#include "Coordinate.h"
+
+using namespace std;
+
+Coordinate::Coordinate(int x, int y) : m_iX(x), m_iY(y) {
+    cout << m_iX << ", " << m_iY << endl;
+}
+
+Coordinate::changeX(int x) const {      
+    m_iX = x;                                                
+}
+// 编译后
+Coordinate::changeX( const Coordinate *this, int x ) {    
+// 此时 this 指针指向的对象为常量，其值不能被修改。（此时 *this 只有只读权限）
+     this->m_iX = x;        // 报错
+}
+
+
+Coordinate::changeX(int x) {
+    m_iX = x;                                                
+}
+// 编译后
+ Coordinate::changeX( Coordinate *this, int x ) {
+    this->m_iX = x;
+}
+
+------------------------ Line.h ----------------------------
+class Line {
+public:
+    Line(int x1, int y2, int x2, int y2);
+    ~Line();
+
+private:
+    const Coordinate m_coorA;  // 常对象成员，一旦初始化就不能再修改。且只能调用其常成员函数
+    const Coordinate m_coorB;
+};
+
+------------------------ Line.cpp ----------------------------
+#include <iostream>
+#include "Line.h"
+
+using namespace std;
+
+Line::Line(int x1, int y1, int x2, int y2) : m_coorA(x1, y1), m_coorB(x2, y2) {
+    cout << Line() << endl;
+}
+
+
+常指针和常引用都只能调用对象的常成员函数
+
+-------------------------- Coordinate.h ----------------------------
+class Coordinate {
+public:
+    Coordinate(int x, int y);
+    ~Coordinate();
+
+    void setX(int x);
+    int getX();
+    void setY(int y);
+    int getY();
+    void printInfo() const;
+private:
+    int m_iX;
+    int m_iY;
+};
+
+
+-------------------------- Coordinate.cpp ----------------------------
+#include "Coordinate.h"
+#include <iostream>
+
+using namespace std;
+
+Coordinate::Coordinate(int x, int y) {
+    m_iX = x;
+    m_iY = y;
+    cout << "Coordinate()" << endl;
+}
+
+Coordinate::~Coordinate() {
+    cout << "~ Coordinate()" << endl;
+}
+
+void Coordinate::setX(int x) {
+    m_iX = x;
+}
+
+int Coordinate::getX() {
+    return m_iX;
+}
+
+void Coordinate::setY(int y) {
+    m_iY = y;
+}
+
+int Coordinate::getY() {
+    return m_iY;
+}
+
+void Coordinate::printInfo() const {
+
+}
+
+
+int main(void) {
+    Coordinate coor1(3, 5);
+    Coordinate &coor2 = coor1;           // 对象引用，给 coor1 起别名
+    Coordinate *p = &coor1;              // 对象指针
+
+    coor1.printInfo();
+    coor2.printInfo();
+    p->printInfo();
+
+    Coordinate coor3(1, 2);
+    Coordinate coor4(3, 4);
+    const Coordinate &coor5 = coor3;    // 常引用，coor5 为常量
+    const Coordinate *p = &coor3;       // 常指针，*p 为常量，指针 p 为变量，仍可以指向其他值
+    
+    Coordinate * const p2 = &coor3;     // p2 为常量，不能指向其他值，而 *p2 则不是常量
+
+    return 0;
+}
+
+  
+static 在类中的使用
+* 静态数据成员；
+* 静态成员函数；
+* 静态数据成员必须单独初始化；
+* 静态成员函数不能调用非静态数据成员和非静态成员函数。（因为静态成员函数中没有 this 指针）；
+* 静态数据成员只有一份，且不依赖对象而存在；
+* 静态数据成员和静态成员函数是依赖于类而存在的；
+
+---------------------- Tank.h ------------------------
+#include <stdlib.h>
+#include <iostream>
+using namespace std;
+
+class Tank {
+public:
+    Tank(string code);
+    ~Tank();
+    
+    void fire();
+    static int getCount();    // 静态成员函数
+private:
+    string m_sCode;
+    static int s_iCount;      // 静态数据成员
+};
+
+
+---------------------- Tank.cpp ------------------------
+#include "Tank.hpp"
+
+int Tank::s_iCount = 10;      // 初始化静态数据成员
+
+Tank::Tank(string code) {
+    m_sCode = code;
+    s_iCount ++;
+    cout << "Tank() " << code << endl;
+}
+
+Tank::~Tank() {
+    s_iCount --;
+    cout << "~Tank() " << m_sCode << endl;
+}
+
+void Tank::fire() {
+    cout << "Tank Fire" << endl;
+}
+
+int Tank::getCount()
+{
+    cout << s_iCount << endl;
+    return s_iCount;
+}
+   
+
+运算符重载（使用关键字 operator）
+* 一元运算符重载
+    * - 负号运算符；
+    * ++ 运算符；
+* 二元运算符重载
+    * + 运算符；
+    * << 运算符；
+    * [] 索引运算符；
+/* ---------------------- Coordinate.hpp ------------------------ */
+#include <stdio.h>
+#include <ostream>
+using namespace std;
+
+class Coordinate {
+    // friend Coordinate & operator-(Coordinate &coor);                   // 入参是引用
+    friend ostream & operator<<(ostream &output, const Coordinate &coor); // 重载 << 运算符，必须使用友元函数
+private:
+    int m_iX;
+    int m_iY;
+public:
+    Coordinate(int x, int y);
+    ~Coordinate();
+    int getX();
+    int getY();
+    
+    // 一元运算符
+    Coordinate & operator-();     // 重载负号运算符
+    Coordinate & operator++();    // 重载前置 ++
+    Coordinate operator++(int);   // 重载后置 ++，int 用来告诉编译器此为后置++
+    
+    // 二元运算符
+    Coordinate operator+(const Coordinate &coor);   // 重载加号运算符
+    int operator[](int index);                      // 重载索引运算符
+};
+
+
+---------------------- Coordinate.cpp ------------------------
+#include "Coordinate.hpp"
+Coordinate::Coordinate(int x, int y) {
+    m_iX = x;
+    m_iY = y;
+}
+
+Coordinate::~Coordinate() {
+    
+}
+
+int Coordinate::getX() {
+    return m_iX;
+}
+
+int Coordinate::getY() {
+    return m_iY;
+}
+
+// 一元运算符
+Coordinate & Coordinate::operator-() {
+    m_iX = -m_iX;
+    m_iY = -m_iY;
+    return *this;
+}
+
+//Coordinate & operator-(Coordinate &coor) {    // 定义友元函数
+//    coor.m_iX = -coor.m_iX;
+//    coor.m_iY = -coor.m_iY;
+//    return coor;
+//}
+
+Coordinate & Coordinate::operator++() {
+    m_iX++;
+    m_iY++;
+    return *this;
+}
+
+Coordinate Coordinate::operator++(int) {
+    Coordinate old(*this);                     // 调用默认的拷贝构造函数
+    m_iX++;
+    m_iY++;
+    return old;
+}
+
+Coordinate Coordinate::operator+(const Coordinate &coor) {
+    Coordinate temp(0, 0);
+    temp.m_iX = this->m_iX + coor.m_iX;
+    temp.m_iY = this->m_iY + coor.m_iY;
+    return temp;
+}
+
+int Coordinate::operator[](int index) {
+    switch (index) {
+        case 0:
+            return this->m_iX;
+        case 1:
+            return this->m_iY;
+            
+        default:
+            return -1;
+    }
+}
+
+ostream& operator<<(ostream &output, const Coordinate &coor) {
+    output << "(" << coor.m_iX << "," << coor.m_iY << ")";
+    return output;
+}
+
+
+模板函数与模板类  
+* template <typename T>     
+* template <typename T, class U>    typename 和 class 可以混用
+
+函数模板  
+#include <iostream>
+using namespace std;
+
+template <typename T>
+void display(T t) {
+    cout << t << endl;
+}
+
+template <typename T, typename U>
+void display(T t, U u) {
+    cout << t << "," << u << endl;
+}
+
+template <typename T, int count>
+void display(T t) {
+    for (int i = 0; i < count; i++) {
+        cout << t << endl;
+    }
+}
+
+int main(int argc, const char * argv[]) {
+    display(10);
+    display(10, 20.20);
+    display<int, 5>(1);
+
+    return 0;
+}
+
+类模板
+#include <iostream>
+
+using namespace std;
+
+/**
+ * 定义一个矩形类模板 Rect
+ * 构造函数：Rect(T length, T height)
+ * 成员函数：calcArea()、calePerimeter()
+ * 数据成员：m_length、m_height
+ */
+
+template <typename T>
+class Rect
+{
+public:
+   Rect(T length, T hieght);
+   T calcArea();
+   T calcPerimeter();
+public:
+    T m_length;
+    T m_height;
+};
+
+/**
+ * 类属性赋值
+ */
+template <typename T>
+Rect<T>::Rect(T length, T height)
+{
+    m_length = length;
+    m_height = height;
+}
+
+/**
+ * 面积方法实现
+ */
+template <typename T>
+T Rect<T>::calcArea()
+{
+    return m_length * m_height;
+}
+
+/**
+ * 周长方法实现
+ */
+template <typename T>
+T Rect<T>::calcPerimeter()
+{
+    return ( m_length + m_height) * 2;
+}
+
+int main(void)
+{
+    Rect<int> rect(3, 6);
+    cout << rect.calcArea() << endl;
+    cout << rect.calcPerimeter() << endl;
+    return 0;
+}
+
+
+标准模板类
+vector：本质是对 C++ 动态数组的封装。
+
+初始化 vector 对象的方式
+vector<T> v1;          // 默认构造函数 v1 为空
+vector<T> v2(v1);      // v2 是 v1 的一个副本
+vector<T> v3(n, i);    // v3 中包含 n 个值为 i 的元素
+vector<T> v4(n);       // 使用默认值初始化 n 个元素的副本
+
+vector 常用函数
+* empty()         判断向量是否为空
+* size()          获得向量中元素个数
+* push_back(elem) 在向量尾部插入数据
+* pop_back()      删除向量尾部数据
+* begin()         返回向量迭代器的首元素
+* end()           返回向量迭代器最末元素的下一个元素
+* clear()         清空向量
+* front()         第一个元素
+* back()          最后一个元素
+
+
+vector 使用迭代器
+int main(void) {
+    
+    vector<string> vec;                              // 创建一个空向量
+    vec.push_back("hello");
+    vec.push_back("world");
+    
+    // 遍历向量中的元素
+    for(int i = 0; i < vec.size(); i++) {
+        cout << vec[i] << endl;
+    }
+
+    // 使用迭代器 iterator
+    vector<string>::iterator iter = vec.begin();    // iter 相当于指针
+    for(; iter != vec.end(); iter++) {
+        cout << *iter << endl;
+    }
+
+    return 0；
+}
+
+list 链表 使用迭代器
+    list<int> list1;
+    list1.push_back(1);
+    list1.push_back(2);
+    list1.push_back(3);
+    list1.push_back(4);
+    
+    list<int>::iterator iter = list1.begin();
+    for (; iter != list1.end(); iter++) {
+        cout << *ite << endl;
+    }
+
+map 映射（字典） 使用迭代器
+   map<string, int> m;
+   pair<string, int> p1("A", 10);
+   pair<string, int> p2("B", 20);
+   pair<string, int> p3("C", 30);
+   m.insert(p1);
+   m.insert(p2);
+   m.insert(p3);
+
+   cout << m["A"] << endl;
+   cout << m["B"] << endl;
+    
+    // 使用迭代器遍历
+    map<string, int>::iterator iter = m.begin();
+    for (; iter != m.end(); iter++) {
+        cout << iter->first << " : " << iter->second << endl;
+    }
+
+
