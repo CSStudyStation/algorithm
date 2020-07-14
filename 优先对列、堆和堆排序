@@ -1,0 +1,336 @@
+优先队列
+
+堆的基本存储（只考虑二叉堆）
+* 二叉堆使用数组存储
+    * 二叉堆中某个节点的值总是不大于其父节点的值；（最大堆）
+    * 二叉堆总是一棵完全二叉树；
+
+完全二叉树的定义：除了最后一层，所有层的节点数达到了最大，于此同时，最后一层的所有节点都在最左侧。
+满二叉树：所有层的节点数达到最大。
+
+经典做法
+方法一：
+从索引为 1 的位置开始存放元素，数组索引为 0 时，不存放数据；
+当 parent 的索引为 i 时：left child index = 2 * i，right child index = 2 * i + 1;
+当 child 的索引为 i 时：parent index = i / 2;
+
+方法二：
+从数组索引为 0 的位置开始存放元素；
+当 parent 的索引为 i 时，left child index = 2 * i + 1, right child index = 2 * i + 2;
+当 child 的索引为 i 时，parent index = (i - 1) / 2；
+最后一个元素的索引值为：count -1;
+最后一个非叶子节点的索引：(count -1 -1) / 2 = (count - 2) / 2；
+
+
+实现最大堆（堆要会白板编程）
+#ifndef MaxHeap_h
+#define MaxHeap_h
+
+#include <iostream>
+#include <stdlib.h>
+#include <cassert>
+
+using namespace std;
+
+// 创建大顶堆
+template <typename T>
+class MaxHeap {
+private:
+    T *data;        // 数组
+    int capacity;   // 数组的容量
+    int count;      // 数组中元素个数
+    
+    // 将索引 index 位置的元素上移，保持最大堆的定义
+    void shiftUp(int index) {
+        // 当父节点的值小于孩子节点的值时，进行交换
+        while (index > 1 && data[index/2] < data[index]) {
+            swap(data[index/2], data[index]);
+            index = index / 2;
+        }
+    }
+    
+    // 将索引 index 位置的元素下移
+    void shiftDown(int index) {
+        while (2 * index <= count) {    // 当节点 index 的左孩子存在
+            int j = 2 * index;          // j 存储左孩子的索引
+            
+            // 当右孩子存在，且右孩子的值大与左孩子的值时，则 j 存储右孩子的索引
+            if(j + 1 <= count && data[j+1] > data[j]) {
+                j = j+1;
+            }
+            
+            // 父节点的值大于左右孩子节点时，结束整个 while 
+            if(data[index] >= data[j]) {
+                break;
+            }
+            
+            swap(data[index], data[j]);
+            index = j;
+        }
+    }
+    
+public:
+    // 创建能容纳 capacity 个元素的大顶堆，
+    // 从索引为 1 的位置开始存储数据，便于计算
+    MaxHeap(int capacity) {
+        data = new T[capacity + 1];
+        this->capacity = capacity;
+        count = 0;
+    }
+    
+    // 使用数组初始化一个最大堆
+    // 从索引为 1 的位置开始存储数据，算法复杂度为：O(n)
+    MaxHeap(T arr[], int count) {
+        data = new T[count + 1];
+        this->count = count;
+
+        for (int i = 0; i < count; i++) {
+            data[i+1] = arr[i];
+        }
+        this->capacity = count;
+
+        // Heapify：从最后一个非叶子节点开始
+        for (int i = count/2; i >= 1; i--) {
+            shiftDown(i);
+        }
+    }
+    
+    int size() {
+        return count;
+    }
+    
+    bool isEmpty() {
+        return count == 0;
+    }
+    
+    // 入队：添加元素
+    void insert(T item) {
+        assert( count + 1 <= capacity);  // 容量检测，防止越界
+
+        data[count+1] = item;            // 在数组的末尾进行添加
+        count ++;
+        
+        shiftUp(count);                  // 维护堆的定义
+        cout << item << endl;
+    }
+    
+    // 出队：取出元素
+    T extractMaxItem() {
+        
+        T maxItem = data[1];
+
+        // 取出最后一个元素，可以使堆保持完全二叉树的性质
+        // 先将最后一个元素放到第一个元素的位置上
+        data[1] = data[count];
+        
+        count--;
+        
+        // 将第一个元素下移到合适的位置
+        shiftDown(1);
+        
+        return maxItem;
+    }
+    
+    // 析构函数
+    ~MaxHeap() {
+        delete [] data;
+    }
+};
+
+#endif /* MaxHeap_h */
+
+
+堆排序
+// 使用最大堆，对数组进行排序
+// 将 n 个元素逐个插入到一个空堆中，算法复杂度为：O(nlogn)
+template<typename T>
+void heapSort(T arr[], int n) {
+    // 创建一个最大堆
+    MaxHeap<T> maxHeap = MaxHeap<T>(n);
+
+    // 将数组中的元素逐一插入到最大堆
+    for(int i = 0; i < n; i++) {
+        maxHeap.insert(arr[i]);
+    }
+
+    // 逐一从堆中取出堆顶元素，然后放入数组中，则实现从小到大进行排序
+    for(int i = n-1; i >= 0; i--) {
+        arr[i] = maxHeap.extractMaxItem();
+    }
+}
+
+// 直接在原数组上进行堆排序，不在使用一个额外的数组作为辅助空间;
+// 二叉堆存储索引从 0 开始;
+template <typename T>
+void _shiftDown(T data[], int count, int index) {
+    
+    // 当索引为 index 的元素至少有左孩子节点时
+    while (2*index+1 < count) {
+        int j = 2 * index + 1; // 左孩子的索引
+        
+        // 右孩子存在，且右孩子的值大于左孩子的值时，j 保存右孩子的索引
+        if (j + 1 < count && data[j+1] > data[j]) {
+            j = j + 1;
+        }
+        
+        // 当父节点的值大于等于孩子节点的值
+        if (data[index] >= data[j]) {
+            break;
+        }
+        
+        swap(data[index], data[j]);
+        index = j;
+    }
+}
+
+template <typename T>
+void heapSort(T arr[], int n) {
+    
+    // heapify: 即将 arr 调整为大顶堆，从最后一个父节点开始调整，使用其成为大顶堆
+    for (int i = (n-2)/2; i >= 0; i--) {
+        _shiftDown(arr, n, i);
+    }
+    
+    // 逐次从大顶堆中取出最大的元素，放在最后，使得整个数组从小到大有序
+    for (int i = n-1; n >= 0; i--) {
+        // 将最大值放在最后，此时破坏了大顶堆的性质，需要将剩下 [0...i) 的元素调整为大顶堆
+        swap(arr[0], arr[i]);
+
+        _shiftDown(arr, i, 0);
+    }
+}
+
+
+索引堆
+
+
+索引堆的优化
+
+
+堆的实现细节优化
+* shiftUp 和 shiftDown 中使用赋值操作替换 swap 操作；
+* 表示堆的数组从 0 开始索引；
+* 没有 capacity 的限制，动态的调整堆中数组的大小；
+
+和堆相关的其他问题
+* 最大最小队列（在 class 中同时维护一个最大堆和一个最小堆）；
+* 二项堆；
+* 斐波那契堆；
+
+
+什么是优先队列
+* 优先队列：出队顺序和入队顺序无关，优先级最高的元素先出队；和优先级相关；（是一种动态队列）；
+* 普通队列：先进先出，后进后出；
+
+为什么使用优先队列
+* 解决 top(k) 问题，即在 N 个元素中选出前 M 个元素；
+* 例如：在 1000000 个元素中选出前 100 名。
+    * 创建一个容量为 100 的堆，即可从 1000000 中选出前 100 名；
+    * 使用排序算法，时间复杂度 O(NlogN)；
+    * 使用优先队列，时间复杂度 O(NlogM)；
+
+优先队列的实现
+* 优先队列使用二叉堆实现；
+* 二叉堆总是一棵完全二叉树，所以二叉堆使用数组存储；
+
+优先对列
+* 优先对列的底层实现是堆，堆的底层实现是数组；
+* 优先队列只能进行入队和出队操作；
+*
+* priority_queue<int> q;                                   // 默认情况下优先对列是最大堆；
+* priority_queue<int, vector<int>, greater<int> > pq2;     // 创建一个最小堆；
+
+优先队列常见操作
+* push
+* pop
+* top
+
+
+Demo 使用系统的优先队列 
+
+#include <iostream>
+#include <queue>
+#include <ctime>
+
+using namespace std;
+
+int main() {
+
+    srand( time(NULL) );
+
+    priority_queue<int> pq;         // 默认情况下，创建出来的为最大堆
+    for(int i = 0; i < 10; i++) {
+        int num = rand() % 100;
+        pq.push(num);
+    }
+
+    while( !pq.empty() ) {
+        int num = pq.top();
+        pq.pop();
+    }
+    cout << endl << endl;
+    
+    
+    priority_queue<int, vector<int>, greater<int> > pq2;    // 创建一个最小堆
+    for(int i = 0; i < 10; i++) {
+        int num = rand() % 100;
+        pq2.push(num);
+    }
+
+    while( !pq2.empty() ) {
+        int num = pq2.top();
+        pq2.pop();
+    }
+    cout << endl << endl;
+    
+    return 0;
+}
+
+LeetCode 347 Top k Frequent Elements
+给定一个非空数组，返回前 k 个出现频率最高的元素。（注意 k 的合法性）
+
+示例：
+输入：nums = [1, 1, 1, 2, 2, 3],  k = 2
+输出：[1, 2]
+
+输入：nums = [1],  k = 1
+输出：[1]
+
+#include <iostream>
+#include <map>
+
+using namespace std;
+/// Time Compleixty: O(nlogk)
+/// Space Complexity: O(n)
+class Solution {
+public:
+    vector<int> topKFrequent(vector<int>& nums, int k) {
+        vector<int> result;
+        unordered_map<int,int> record;   // 统计每个元素出现的次数 <元素，处理的次数>
+        for(auto &num: nums) {
+            record[num]++;
+        }
+
+        // 构建小顶堆
+        priority_queue<pair<int,int>, vector<pair<int,int>>, greater<pair<int,int>>> pq;
+        for(const pair<int, int>& p: record) {
+            if(pq.size() == k && p.second > pq.top().first) 
+                pq.pop();
+
+            // 注意小顶堆中的比较函数，所以构造堆中的 pair 时把频率写在前面, 元素写在后面
+            // 在进行 push 操作时，会淘汰掉堆顶最小的元素，这样堆中的元素即为 k 个最大的
+            if(pq.size() < k)
+                pq.push(make_pair(p.second, p.first));  
+        }
+
+        while(!pq.empty()) {
+            result.push_back(pq.top().second);
+            pq.pop();
+        }
+
+        return result;
+    }
+};
+
+
+
