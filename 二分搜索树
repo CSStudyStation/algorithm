@@ -1,0 +1,713 @@
+二分搜索树
+
+定义：
+1. 每个节点的键值大于左孩子；
+2. 且每个节点的键值小于右孩子；
+3. 且以左右孩子为根的子树仍为二分搜索树；
+
+二分搜索树基本操作（时间复杂度：O(logn)）
+* 插入 insert
+* 查找 find
+* 删除 delete
+* 最大值 maximum     二叉搜索树右子树上的最右节点
+* 最小值 minimum      二叉搜索树左子树上的最左节点
+* 前驱 predecessor
+* 后继 successor
+* 上界 ceil，下界 floor
+* 某个元素的排名 rank
+* 寻找第 K 大（小）的元素 select
+
+优点
+* 查找、插入、删除数据，时间复杂度为O(nlogn)。可以高效的动态维护数据；
+
+ 
+平衡二叉树
+* 红黑树；
+* AVL tree；
+
+二分搜索树前中后遍历（深度优先遍历）
+* 前序遍历：先访问当前节点，再依次递归访问左右子树；
+* 中序遍历：先递归访问左子树，在访问自身，在递归访问该节点右子树；
+* 后续遍历：先递归访问左右子树，再访问自身节点；
+
+层序遍历（广度优先遍历）
+* 使用队列作为辅助数据结构；
+
+#ifndef BST_h
+#define BST_h
+#include <queue>
+
+template <typename Key, typename Value>
+class BST {
+private:
+    struct Node {
+        Key key;
+        Value value;
+        Node *left;
+        Node *right;
+        
+        Node(Key key, Value value) {
+            this->key = key;
+            this->value = value;
+            this->left = NULL;
+            this->right = NULL;
+        }
+        
+        // 复制一个 node 节点
+        Node(Node *node) {
+            this->key = node->key;
+            this->value = node->value;
+            this->left = node->left;
+            this->right = node->right;
+        }
+    };
+    
+    Node *root; // 根节点
+    int count;  // 元素个数
+    
+    // 向以 node 为根的二叉搜索树中，插入节点（key, value）
+    // 返回新插入节点后的二叉搜索树的根
+    Node* insert(Node* root, Key key, Value value) {
+        if (root == NULL) {
+            count ++;
+            return new Node(key, value);
+        }
+        
+        if (key > root->key) {
+            root->right = insert(root->right, key, value);
+        } else if (key < root->key) {
+            root->left = insert(root->left, key, value);
+        } else {
+            root->value = value;
+        }
+
+        return root;
+    }
+    
+    // 在以 node 为根的二叉搜索树中，查看是否包含键值为 key 的元素
+    bool contain(Node* root, Key key) {
+        if (root == NULL) {
+            return false;
+        }
+        
+        if (key > root->key) {
+            return contain(root->right, key);
+        } else if (key < root->key) {
+            return contain(root->left, key);
+        } else {
+            return true;
+        }
+    }
+    
+    // 在以 node 为根的二叉搜索树中，搜索键值为 key 所对应的 value
+    Value* search(Node* root, Key key) {
+        if (root == NULL) {
+            return NULL;
+        }
+        
+        if (key > root->key) {
+            return search(root->right, key);
+        } else if (key < root->key) {
+            return search(root->left, key);
+        } else {
+            return &(root->value);
+        }
+    }
+    
+    // 对以 node 为根的二叉搜索树进行前序遍历
+    void preOrder(Node *root) {
+        if (root == NULL) {
+            return;
+        }
+
+        std::cout << "(key: " << root->key << ", value: " << root->value << ")" << std::endl;
+        preOrder(root->left);
+        preOrder(root->right);
+    }
+    
+    // 对以 node 为根的二叉搜索树进行中序遍历
+    void inOrder(Node *root) {
+        if (root == NULL) {
+            return;
+        }
+
+        inOrder(root->left);
+        std::cout << "(key: " << root->key << ", value: " << root->value << ")" << std::endl;
+        inOrder(root->right);
+    }
+    
+    // 对以 root 为根的二叉搜索树进行后序遍历
+    void postOrder(Node *root) {
+        if (root == NULL) {
+            return;
+        }
+
+        postOrder(root->left);
+        postOrder(root->right);
+        std::cout << "(key: " << root->key << ", value: " << root->value << ")" << std::endl;
+    }
+    
+    // 在以 node 为根的二叉树进行层序遍历
+    void levelOrder(Node * node) {
+        std::queue<Node *> q;
+        q.push(node);
+
+        while (!q.empty()) {
+            Node *node = q.front(); // 取出队首元素
+            q.pop();
+            
+            std::cout << "(key: " << node->key << ", value: " << node->value << ")" << std::endl;
+            
+            if (node->left != NULL) {
+                q.push(node->left);
+            }
+            if (node->right != NULL) {
+                q.push(node->right);
+            }
+        }
+    }
+    
+    // 在以 node 为根的二叉搜索树上，寻找最小键的节点
+    Node* minimumKey(Node *node) {
+        
+        while (node->left != NULL) {
+            node = node->left;
+        }
+        return node;
+    }
+    
+    // 在 node 为根的二叉搜索树上，寻找最大键的节点
+    Node* maxmumKey(Node *node) {
+        while (node->right != NULL) {
+            node = node->right;
+        }
+        return node;
+    }
+    
+    // 删除以 node 为根的二分搜索树中最小节点
+    // 返回删除节点后新的二分搜索树的根
+    Node* removeMinKey(Node *node) {
+        if (node->left == NULL) {
+            Node *rightChild = node->right;
+            delete node;
+            count--;
+            return rightChild;
+        }
+        
+        node->left = removeMinKey(node->left);
+        return node;
+    }
+
+    // 非递归写法
+    Node* removeMinKeyNoneRecursive(Node *node) {
+        if (node->left == NULL) {
+            Node *rightChild = node->right;
+            delete node;
+            count-- ;
+            return rightChild;
+        }
+        Node *parent = NULL;
+        while (node->left != NULL) {
+            parent = node;
+            node = node->left;
+        }
+        parent->left = node->right;
+        delete node;
+        count --;
+        return parent;
+    }
+    
+    // 删除以 node 为根的二叉搜索树中最大节点
+    // 返回新的根节点
+    Node* removeMaxKey(Node *node) {
+        if (node->right == NULL) {
+            Node *leftChild = node->left;
+            delete node;
+            count--;
+            return leftChild;
+        }
+        
+        node->right = removeMaxKey(node->right);
+        return node;
+    }
+
+    // 非递归
+    Node* removeMaxKeyNoneRecursive(Node *node) {
+        if (node->right == NULL) {
+            Node *leftChild = node->left;
+            delete node;
+            count--;
+            return leftChild;
+        }
+        
+        Node *parent = NULL;
+        while (node->right != NULL) {
+            parent = node;
+            node = node->right;
+        }
+        
+        parent->right = node->left;
+        delete node;
+        count -- ;
+        return parent;
+    }
+    
+    // 在以 node 为根的二叉搜索树上，删除键为 key 的节点，返回新的二叉搜索树的根
+    Node* removeKey(Node *node, Key key) {
+        // 递归终止条件，没找到 key 的节点
+        if (node == NULL) {
+            return NULL;
+        }
+        
+        if (key < node->key) {
+            node->left = removeKey(node->left, key);
+            return node;
+        } else if (key > node->key) {
+            node->right = removeKey(node->right, key);
+            return node;
+        } else {    // key == node->key
+            if (node->left == NULL) { // 待删节点左子树为空
+                Node *rightChild = node->right;
+                delete node;
+                count--;
+                return rightChild;
+            }
+            if (node->right == NULL) { // 待删节点右子树为空
+                Node *leftChild = node->left;
+                delete node;
+                count--;
+                return leftChild;
+            }
+            
+            // node->left != NULL && node->right != NULL
+            Node *successor = new Node(minimumKey(node->right));  // 找到右子树上最大的节点，用其取替待删节点的位置
+            count++;
+            successor->left = node->left;
+            successor->right = removeMinKey(node->right);
+            
+            delete node;
+            count--;
+            return successor;
+        }
+    }
+    
+public:
+    BST() {
+        root = NULL;
+        count = 0;
+    }
+    
+    ~BST() {
+        destory(root);
+    }
+    
+    int size() {
+        return count;
+    }
+    
+    bool isEmpty() {
+        return count == 0;
+    }
+    
+    // 插入
+    void insert(Key key, Value value) {
+        root = insert(root, key, value);
+    }
+    
+    // 二叉搜索树中是否含有键为 key 的节点
+    bool contain(Key key) {
+        return contain(root, key);
+    }
+    
+    Value* search(Key key) {
+        return search(root, key);
+    }
+    
+    // 前序遍历
+    void preOrder() {
+        preOrder(root);
+    }
+    
+    // 中序遍历
+    void inOrder() {
+        inOrder(root);
+    }
+    
+    // 后序遍历
+    void postOrder() {
+        postOrder(root);
+    }
+    
+    // 使用后序遍历的思想，释放以 node 为根的二叉树
+    void destory(Node *node) {
+        if (node == NULL) {
+            return;
+        }
+
+        destory(node->left);    // 销毁左子树
+        destory(node->right);   // 销毁右子树
+        delete node;            // 销毁当前节点
+
+        count --;
+    }
+    
+    // 层序遍历
+    void levelOrder() {
+        levelOrder(root);
+    }
+    
+    // 寻找二叉搜索树中最小的键
+    Key minKey() {
+        assert(root != NULL); // 此处只是简单的处理 root == NULL 的情况
+        Node *minNode = minimumKey(root);
+        return minNode->key;
+    }
+    
+    // 寻找二叉搜索树中最大的键
+    Key maxKey() {
+        assert(root != NULL); // 此处只是简单的处理 root == NULL 的情况
+        Node *maxNode = maxmumKey(root);
+        return maxNode->key;
+    }
+    
+    // 删除二叉搜索树中键值最小的节点
+    void removeMinKey() {
+        if (root) {
+            root = removeMinKey(root);
+        }
+    }
+    
+    // 删除二叉搜索树中键值最大的节点
+    void removeMaxKey() {
+        if (root) {
+            root = removeMaxKey(root);
+        }
+    }
+    
+    void removeKey(Key key) {
+        root = removeKey(root, key);
+    }
+    
+    void insertNoneRecursive(Key key, Value value) {
+        
+        if (root == NULL) {
+            root = new Node(key, value);
+            return;
+        }
+        
+        Node *tempNode = root;
+        bool left = true;     //作为左子树插入
+        bool right = false;    //作为右字数插入
+        
+        while (true) {
+            if (root != NULL && key > root->key) {
+                tempNode = root;
+                left = false;
+                right = true;
+                root = root->right;
+            } else if (root != NULL && key < root->key) {
+                tempNode = root;
+                left = false;
+                right = true;
+                root = root->left;
+            } else if (root != NULL && key == root->key) {
+                root->value = value;
+                return;
+            }
+            
+            if (root == NULL) {
+                Node *child = new Node(key, value);
+                left ? tempNode->left = child : tempNode-right = child;
+                count++;
+                return;
+            }
+        }
+    }
+
+};
+
+#endif /* BST_h */
+
+
+LeetCode 235. Lowest Common Ancestor of a Binary Search Tree （经典）
+给定一棵二分搜索树和两个节点，寻找这两个节点的最近公共祖先。
+
+说明：
+* 所有节点的值都是唯一的。
+* p、q 为不同节点且均存在于给定的二叉搜索树中。
+
+示例：
+输入：[6, 2, 8, 0, 4, 7, 9, null, null, 3, 5]，p = 2，q = 8
+                                6
+                           /          \
+                          2            8
+                       /    \         /  \
+                      0      4       7    9
+                           /   \
+                          3     5
+
+输出：6
+解释：2 和 8 的最近公共祖先为 6；
+
+输入：[6, 2, 8, 0, 4, 7, 9, null, null, 3, 5]，p = 2，q = 4
+输出：2
+解释：2 和 4 的最近公共祖先为 2；
+
+#include<iostream>
+
+using namespace std;
+
+/// defination for a binary tree node
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int x) : val(x), left(NULL), right(NULL);
+};
+
+class Solution {
+public:
+    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+        if(root == NULL)
+            return NULL;
+        
+        // p, q 都在 root 的左子树上
+        if(p->val < root->val && q->val < root->val) {
+            return lowestCommonAncestor(root->left, p, q);
+        }
+        
+        // p, q 都在 root 的右子树上
+        if(p->val > root->val && q->val > root->val) {
+            return lowestCommonAncestor(root->right, p, q);
+        }
+        
+        // p, q 一个在左子树上，一个在右子树上，或者 p,q 其中一个为父节点，则当前节点即为公共祖先节点
+        // 即 (p->val <= root->val && q->val >= root->val) || (p->val >= root->val && q->val <= root->val)
+        return root;
+    }
+};
+
+
+LeetCode 236. Lowest Common Ancestor of a Binary Tree    (非常经典的 LCA 问题)
+给定一棵二叉树和两个节点，寻找这两个节点的最近公共祖先。
+
+说明：
+* 所有节点的值都是唯一的。
+* p、q 为不同节点且均存在于给定的二叉树中。
+
+示例：
+输入：[3, 5, 1, 6, 2, 0, 8, null, null, 7, 4]，p = 5，q = 1
+                              3
+                          /       \
+                        5          1
+                       / \        / \
+                      6   2      0   8
+                         / \
+                        7   4
+输出：3
+解释：5 和 1 的最近公共祖先为 3.
+
+输入：[3, 5, 1, 6, 2, 0, 8, null, null, 7, 4]，p = 5，q = 4
+输出：5
+解释：5 和 4 的最近公共祖先为 5
+
+思路：使用递归
+对每个节点对应的子树，若该子树不含有 p 或 q，返回 null；
+否则，如果 p 和 q 分别位于当前子树根节点两侧，则返回当前节点;
+否则（p 和 q 在同一侧）返回来自左边或右边的 LCA;
+
+#include<iostream>
+
+using namespace std;
+
+/// Definition for a binary tree node
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+};
+
+class Solution {
+public:
+    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+        if (!root || root == p || root == q) 
+            return root;
+
+        TreeNode* left = lowestCommonAncestor(root->left, p, q);
+        TreeNode* right = lowestCommonAncestor(root->right, p, q);
+
+        if (left && right) 
+            return root;
+
+        return left ? left : right;
+    }
+};
+
+
+LeetCode 98. Validate Binary Search Tree
+给定一棵二叉树，验证其是否为二分搜索树。
+
+思路：使用二分搜索的定义进行递归的验证。
+
+#include <iostream>
+
+using namespace std;
+
+/// Definition for a binary search tree node.
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int x) : val(x), left(NULL), right(NULL) {} 
+};
+
+class Solution {
+private:
+    int maxValue(TreeNode* root) {
+        TreeNode* node = root;
+        int maxValue = INT_MAX;
+        while(node) {
+            maxValue = node->val;
+            node = node->right;
+        }
+        
+        return maxValue;
+    }
+
+    int minValue(TreeNode* root) {
+        TreeNode* node = root;
+        int minValue = INT_MIN;
+        while(node) {
+            minValue = node->val;
+            node = node->left;
+        }
+        
+        return minValue;
+    }
+    
+public:
+    bool isValidBST(TreeNode* root) {
+        // 递归终止条件
+        if(root == NULL) {
+            return true;
+        }
+        // 叶子节点
+        if(root->left == NULL && root->right == NULL)
+            return true;
+
+        if(root->left && root->val <= root->left->val)
+            return false;
+            
+        if(root->right && root->val >= root->right->val)
+            return false;
+
+        if(root->left) {
+            int maxVal = maxValue(root->left);
+            if(root->val <= maxVal)
+                return false;
+        }
+
+        if(root->right) {
+            int minVal = minValue(root->right);
+            if(root->val >= minVal)
+                return false;
+        }
+
+        // 递归过程
+        return isValidBST(root->left) && isValidBST(root->right);
+     }
+};
+
+
+LeetCode 450 Delete Node in a BST    （二分搜索树上最难的一个操作）
+给定一棵二分搜索树，删除其中一个节点。
+
+分析：
+* 若删除的节点不存在？
+* 是否可能有多个需要删除的节点？
+* 删除的节点是否需要返回？
+
+
+
+LeetCode 108. Convert Sorted Array To Binary Search Tree（经典）
+给定一个有序数组，将其转化为一棵平衡的二分搜索树。
+
+分析：
+对一棵二分搜索树进行中序遍历，可得到一个有序数组。
+
+// Recursion
+// Time Complexity: O(n)
+// Space Complexity: O(logn)
+class Solution {
+private:
+    TreeNode* buildTree(const vector<int>& nums, int l, int r) {
+        // 递归终止条件
+        if(l > r) 
+            return NULL; 
+    
+        // 递归过程
+        int mid = (r-l)/2 + l;
+        TreeNode* root = new TreeNode(nums[mid]); 
+        root->left = buildTree(nums, l, mid - 1);
+        root->right = buildTree(nums, mid + 1, r);
+
+        return root;
+    }
+
+public:
+    TreeNode* sortedArrayToBST(vector<int>& nums) { 
+        if(nums.size() == 0) 
+            return NULL;
+
+        return buildTree(nums, 0, nums.size() - 1); 
+    } 
+}; 
+
+
+LeetCode 230. Kth smallest element in a BST
+给定一棵二分搜索树，在这棵二分搜索树上寻找第 K 小元素。
+
+分析：
+由于二分搜索树本身存在顺序性，可以使用类似快速排序中的 partition 来找到第 K 小元素。
+
+/// Definition for a binary tree node.
+struct TreeNode {
+    int val;
+    TreeNode *left;
+    TreeNode *right;
+    TreeNode() : val(0), left(nullptr), right(nullptr) {}
+    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+    TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+};
+
+class Solution {
+private:
+    int res;                                  // 全局变量，保存最终结果
+    
+    // 中序遍历二叉搜索树
+    void inorder(TreeNode* root, int k, int& count) {   
+        if(root == nullptr)
+            return;
+        
+        inorder(root->left, k, count);        // 左
+        
+        count++;
+        if(count == k) {                      // 根
+            res = root->val;
+            return;
+        }
+        
+        inorder(root->right, k, count);       // 右
+    }
+
+ public:
+    int kthSmallest(TreeNode* root, int k) {
+        int count = 0;
+        inorder(root, k, count);              // 传递 count 的引用
+        return res;        
+    }
+};
+
+
+
