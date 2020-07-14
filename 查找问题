@@ -1,0 +1,1055 @@
+查找
+
+二分查找法
+* 仅对于有序数组，才能使用二分查找法；
+
+在有序数组 arr 中，查找目标值 target，如果找到，则返回对应的索引；否则，返回 -1；
+// 二分查找法
+template <typename T>
+int binarySearch(T arr[], int n, T target) {
+    int lhs = 0;                      // 查找范围的左边界
+    int rhs = n - 1;                  // 查找范围的右边界
+
+    while (lhs <= rhs) {
+                
+        int mid = (rhs-lhs)/2 + lhs;  // 正确的计算方式是使用减法，可以防止溢出
+
+        if (arr[mid] == target) {
+            return mid;
+        } else if (arr[mid] > target) {
+            rhs = mid - 1;
+            
+        } else {
+            lhs = mid + 1;
+        }
+    }
+    
+    return -1;
+}
+
+
+查找有无（使用 set）
+* 元素 a 是否存在；
+
+查找对应关系（使用 map）
+* 元素 a 出现了几次；
+
+C++ 中 set 和 map 基本使用
+* insert
+* find
+* erase
+* change (map)
+* 
+* map 和 set 的底层实现为平衡二叉树。插入、查找、删除的时间复杂度为: O(logn)
+* unordered_map 和 unodered_set 的底层实现为哈希表。插入、查找、删除的时间复杂度为: O(1)
+
+
+Leetcode 349. Intersection of Two Arrays
+给定两个数组 nums，求两个数组的公共元素。结果中每个元素只能出现一次，出现的顺序可以是任意的。
+
+例如：
+输入：nums1 = [1, 2, 2, 1]，nums2 = [2, 2]
+输出：[2]
+
+输入：nums1 = [4, 9, 5], nums2 = [9, 4, 9, 8, 4]
+输出：[9, 4]
+
+#include <iostream>
+#include <vector>
+#include <set>
+
+using namespace std;
+
+// Time Complexity: O(nlogn)
+// Space Complexity: O(n)
+class Solution {
+public:
+    vector<int> intersection(vector<int>& num1, vector<int>& num2) {
+        // 保存 num1 中不同的元素
+        set<int> record; 
+
+        // 时间复杂度为O(logn)，整个 for 循环的时间复杂度为O(nlgon)
+        for(int i = 0; i < num1.size(); i++) { 
+            record.insert(num1[i]); 
+        }
+
+        // 将即在集合 record 中，也在 nums2 中的元素，保存在 resultSet 中
+        // 使用 set 确保相同的元素只有一个
+        set<int> resultSet; 
+        for(int i = 0; i < num2.size(); i++) {
+            if( record.find(num2[i]) != record.end() ) {
+                resultSet.insert( num2[i] );
+            }
+        }
+
+        // 使用容器类的迭代器进行遍历
+        vector<int> resultVector;
+        for( set<int>::iterator iter = resultSet.begin(); iter != resultSet.end(); iter++ ) { 
+            resultVector.push_back( *iter );
+        }
+
+        return resultVector;
+    }
+};
+
+
+// 简写
+// Time Complexity: O(nlogn)
+// Space Complexity: O(n)
+class Solution {
+public:
+    vector<int> intersection(vector<int>& num1, vector<int>& num2) {
+        // 将 vector num1 转化为 set, 保存 num1 中不同的元素
+        set<int> record(num1.begin(), num1.end()); 
+
+        // 在集合 record 中，同时也在 nums2 中的元素，保存在 resultSet 中
+        // 使用 set 确保相同的元素只有一个
+        set<int> resultSet; 
+        for(int i = 0; i < num2.size(); i++) {
+            if( record.find(num2[i]) != record.end() ) {
+                resultSet.insert( num2[i] );
+            }
+        }
+
+        // 将 set 转化为 vector
+        return vector<int>(resultSet.begin(), resultSet.end()); 
+    }
+};
+
+
+Leetcode 350. Intersection of Two Arrays
+给定两个数组 nums，求两个数组的交集。出现的顺序可以是任意的。
+
+示例：
+输入：nums1 = [1, 2, 2, 1]，nums2 = [2, 2]
+输出：[2, 2]
+
+输入：nums1 = [4, 9, 5]，nums2 = [9, 4, 9, 8, 4]
+输出：[4, 9]
+
+#include <iostream>
+#include <vector>
+#include <map>
+
+using namespace std;
+
+// Time Complexity: O(nlogn)
+// Space Complexity: O(n)
+class Solution {
+public:
+    vector<int> intersect(vector<int>& num1, vector<int>& num2) {
+
+        map<int, int> record;  // 元素作为键，出现的次数作为值
+        for(int i = 0; i < num1.size(); i++ ) {
+            record[num1[i]]++;    // 使用字典统计 num1 中元素出现的次数，默认值为 0
+        }
+
+        vector<int> resultVector;
+        for(int i = 0; i < num2.size(); i++) {
+            if(record[num2[i]] > 0) { // 在 C++ 语言中，int 的默认值为 0
+                resultVector.push_back(num2[i]); // 添加到结果集中
+                record[num2[i]]--;    // 对相应的次数减1
+            }
+        }
+        
+        return resultVector;
+    }
+};
+
+
+// 简写
+class Solution {
+public:
+    vector<int> intersect(vector<int>& num1, vector<int>& num2) {
+        map<int,int> record;  // nums1[i]作为键，出现的次数作为值
+        for(int i = 0; i < num1.size(); i++ ) {
+            // 查找字典中某个键是否存在
+            if(record.find(num1[i]) == record.end()) { 
+                record.insert(make_pair(num1[i], 1));
+            } else {
+                record[num1[i]]++;    // 使用字典统计 num1 中元素出现的次数
+            }
+        }
+
+        vector<int> resultVector;
+        for(int i = 0; i < num2.size(); i++) {
+            if(record.find(num2[i]) != record.end() && record[num2[i]] > 0) { 
+                resultVector.push_back(num2[i]); // 添加到结果集中
+                record[num2[i]]--;    // 对相应的次数减1
+                
+                if(record[num2[i]] == 0) {  // 当值为 0 时，将其从字典中删除
+                    record.erase(num2[i]);
+                }
+            }
+        }
+        
+        return resultVector;
+    }
+};
+
+
+// 对 C++ 中 map 测试
+int main() {
+    Map<int, int> myMap; 
+
+    if(myMap.find(40) == myMap.end()) {
+        cout << "Cann’t find element 40" << endl;
+    } else {
+        cout << "Element 40 in the map" << endl;
+    }
+
+    cout << myMap[40] << endl; // 查看系统默认的出始值。当第一次访问后，系统会将其加入到 map 中
+
+    if(myMap.find(40) == myMap.end()) {
+        cout << "Cann’t find element 40" << endl;
+    } else {
+        cout << "Element 40 in the map" << endl;
+    }
+
+    myMap[40]++;    //修改值
+    cout << myMap[40] << endl;
+    
+    myMap[40]--;    // 修改值
+    cout << myMap[40] << endl;
+
+    if(myMap.find(40) == myMap.end()) {
+        cout << "Cann’t find key 40" << endl;
+    } else {
+        cout << "key 40 in the map" << endl;
+    }
+    
+    myMap.erase(40);    // 真正的将键为 40 的元素删除
+    if(myMap.find(40) == myMap.end()) {
+        cout << "Cann’t find key 40" << endl;
+    } else {
+        cout << "key 40 in the map" << endl;
+    }
+
+    return 0;
+}
+
+
+Leetcode 242. Valid Anagram
+判断字符串 t 是否是字符串 s 变换字符顺序后得到的结果。
+
+示例：
+输入：S = "anagram"，T = "nagaram"
+输出：true
+
+输入：S = "rat"，T = "car"
+输出：false
+
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+// 方法一：Sorting
+// Time Complexity: O(nlogn)
+// Space Complexity: O(1)
+class Solution {
+public:
+    bool isAnagram(string s, string t) {
+        sort(s.begin(), s.end());
+        sort(t.begin(), t.end());
+
+        return s == t;
+    }
+};
+
+
+// 方法二: 统计字符出现的频次
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+class Solution {
+public:
+    bool isAnagram(string s, string t) {
+        if(s.size() != t.size()) {
+            return false;
+        }
+
+        int freq[26] = {0};
+        for(int i = 0; i < s.size(); i++) {
+            freq[s[i]-'a']++;
+        }
+
+        for(int i = 0; i < t.size(); i++) {
+            freq[t[i]-'a']--;
+            if(freq[t[i]-'a'] < 0 ) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+};
+
+
+
+LeetCode 202. Happy Number
+判断一个数是否为 happy number。happy number 是指一个数，求其各位数字的平方和，对求和得到的新数字，也重复上述过程，如果最终能得到1，这个数字就是 happy number；如果这个过程陷入了一个不1的循环，则不是 happy number。
+
+示例：
+以 19 为例：
+1^2 + 9^2 = 82
+8^2 + 2^2 = 68
+6^2 + 8^2 = 100
+1^2 + 0^2 + 0^2 = 1    Happy Number!
+
+#include <iostream>
+#include <unordered_set> 
+
+using namespace std;
+
+// Time Complexity: O(n)
+// Space Complexity: O(n)
+class Solution {
+private:
+    // 计算 n 的各位数字平方和
+    int sum(int n) {
+        int res = 0;
+        while(n) {
+            int t = n % 10;
+            res += t * t;
+            
+            n = n / 10;
+        }
+
+        return res;
+    }
+    
+public:
+    bool isHappy(int n) {
+        unordered_set<int> record;    // 记录每次计算得到的和
+
+        while(n != 1) {
+            n = sum(n);
+            if(record.find(n) == record.end()) {
+                record.insert(n);
+            } else {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+};
+
+
+LeetCode 290. Word Pattern
+给出一个模式（pattern）以及一个字符串，判断这个字符串是否符合模式
+
+示例：
+输入：pattern = "abba"，str = "dog cat cat dog"
+输出：true 
+
+输入：pattern = "abba"，str = "dog cat cat fish"
+输出：false
+
+输入：patter = "aaaa"， str = "dog cat cat dog"
+输出：false
+
+输入：patter = "abab"，str = "dog dog dog dog"
+输出：false
+
+#include <iostream>
+#include <string>
+#include <vector>
+#include <unordered_map>
+
+using namespace std;
+
+// Time Complexity: O(n)
+// Space Complexity: O(n)
+class Solution {
+public:
+    bool wordPattern(string pattern, string str) {
+        vector<string> words = split(str);
+        assert(pattern.size() == words.size());
+
+        unordered_map<char, string> map1; // 记录字符对应的字符串
+        unordered_map<string, char> map2; // 记录字符串对应的字符
+
+        for(int i = 0; i < pattern.size(); i++) {
+            if(map1.find(pattern[i]) == map1.end()) {
+                // 双校验
+                if(map2.find(words[i]) != map2.end()) {
+                    return false;
+                }
+                
+                // 若都不存在，则添加
+                map1[pattern[i]] = words[i];
+                map2[words[i]] = pattern[i];
+            }
+            else {
+                string val = map1[pattern[i]];
+                if(val != words[i]) {
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    }
+
+private:
+    // 将字符串分割为字符串数组
+    vector<string> split(string& str) {
+        vector<string> res;
+        int start = 0;
+        for(int i = 0; i <= str.size(); i++) {
+            if(str[i] == ' ' || i == str.size()) {
+                res.push_back(str.substr(start, i-start));
+                start = i+1;
+            }
+        }
+        return res;
+    }
+};
+
+
+LeetCode 205. Isomorphic Strings
+判断两个字符串是否同构
+如果我们能够寻找到一个字符集到字符集的映射，使得通过这个字符集的映射，s 可以转变为 t ，则称为 s 和 t 同构。
+
+示例：
+输入：s = "egg", t = "add"
+输出：true
+
+输入：s = "foo", t = "bar"
+输出：false
+
+输入：s = "paper", t = "title"
+输出：true
+
+
+#include <iostream>
+#include <string>
+#include <unordered_map>
+
+using namespace std;
+
+// Time Complexity: O(n)
+// Space Complexity: O(n)
+class Solution {
+public:
+    bool isIsomorphic(string s, string t) {
+        assert(s.size() == t.size());
+        unordered_map<char, char> map1;    // 记录 s 中的每个字符到 t 中每个字符的映射
+        unordered_map<char, char> map2;    // 记录 t 中的每个字符到 s 中每个字符的映射
+
+        for(int i = 0; i < s.size(); i++) {
+            if(map1.find(s[i]) == map1.end()) {
+                if(map2.find(t[i]) != map2.end())
+                    return false;
+
+                map1[s[i]] = t[i];
+                map2[t[i]] = s[i];
+            }
+            else {
+                char c = map1[s[i]];
+                if(c != t[i])
+                    return false;
+            }
+        }
+
+        return true;
+    }
+};
+
+
+
+LeetCode 451. Sort Characters By Frequency
+给定一个字符串，按照字母出现频率的倒序重组整个字符串。对于相同频次的字符，顺序任意。
+
+示例：
+输入："tree"
+输出："eert"
+
+输入："cccaaa"
+输出："cccaaa"
+
+输入："Aabb"
+输出："bbAa"
+
+#include<iostream>
+
+using namespace std;
+
+// Time Complexity: O(nlong)
+// Space Complexity: O(1)
+
+class Solution {
+public:
+    string frequenceSort(string s) {
+        // 初始化
+        pair<int, char> freq[256];
+        for(int i = 0; i < 256; i++) {
+            freq[i].first = 0;
+            freq[i].second = i;
+        }
+    
+        // 统计字符出现的次数
+        for(int i = 0; i < s.size(); i++) {
+            freq[s[i]].first++;
+        }
+
+        // 从大到小进行排序
+        sort(freq, freq+256, greater<pair<int, char>>() );
+        
+        int index = 0;
+        for(int i = 0; i < s.size(); i++) {
+            while(freq[index].first == 0)
+                index ++;
+            
+            s[i] = freq[index].second;
+            freq[index].first --;
+        }
+
+        return s;
+    }
+};
+
+
+LeetCode 1. Two Sum 两数之和    (经典)
+给出一个整型数组 nums。返回这个数组中两个数字的索引值 i 和 j，使得 num[i] + num[j] 等于一个给定的 target 值。两个索引不能相等。
+
+示例：
+输入：nums = [ 2, 7, 11, 15 ]，target = 9
+输出：[0, 1]
+
+#include <iostream>
+#include <vector>
+#include <cassert>
+#include <unordered_map>
+
+using namespace std;
+
+// 使用查找表解决，将所有元素放入查找表，之后对于每一个元素 a，查找 target-a 是否存在。
+// Time Complexity: O(n)
+// Space Complexity: O(n)
+class Solution {
+    vector<int> twoSum(vector<int>& nums, int target) {
+
+        unordered_map<int, int> record; // 数组的元素作为键，下标作为值
+
+        for(int i = 0; i < nums.size(); i++) {
+            // 用遍历到的当前值做为一个加数，计算出另一个加数
+            int key = target - nums[i];
+            
+            // 在当前组建的 map 中查找另一个加数是否存在。
+            // 若存在，则为找到；
+            // 若不存在，则将当前值加入到 map 中，继续遍历下一个数据;
+            if(record.find(key) != record.end()) {
+                int res[2] = { i, record[key] };
+                return vector<int>(res, res+2);    
+            }
+            
+            record[nums[i]] = i;
+        }
+
+        throw invalid_argument("the input has no solution");
+    }
+};
+
+
+LeetCode 53. 最大子序和（经典）
+给定一个整数数组 nums ，找到一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。
+
+示例：
+输入: [-2, 1, -3, 4, -1, 2, 1, -5, 4]
+输出: 6
+解释: 连续子数组[4, -1, 2, 1]的和最大为 6。
+
+#include <iostream>
+#inlcude <vector>
+
+using namespace std;
+
+// 方法一
+// Time complexity: O(n)
+// Space complexity: O(1)
+class Solution {
+public:
+    int maxSubArray(vector<int>& nums) {
+        int res = *max_element(nums.begin(), nums.end());   // 求出数组中的最大元素值
+        
+        if(res < 0)         // 若最大元素值小于 0 ，则说明数组中所有的元素均小于 0，
+            return res;     // 则最大子区间即为只含一个元素的子区间
+        
+        int sum = 0;        // 保存子区间的累加和
+        for(int e: nums) {
+            if(sum + e < 0) // 若加入一个新元素 e 后，累加和小于零，则表明 e 不能加入子区间
+                sum = 0;    // sum 进行重置，开始寻找下一最大子区间的和
+            else {
+                res = max(res, sum+e);  // 记录遍历过程中最大子区间的和
+                sum += e;
+            }
+        }
+        
+        return res;
+    }
+};
+
+// 方法二: 动态规划求解
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+class Solution {
+    int maxSubArray(vector<int>& nums) {
+        int result = nums[0];
+        
+        int dp = nums[0];                     // 最基本问题的解
+
+        for(int i = 1; i < nums.size(); i++) {
+            dp = max(dp+nums[i], nums[i]);    // 方案一：将 nums[i] 加入累计和中
+                                              // 方案二：nums[i] 作为最新的累计和
+                                              // 择优 dp = max(累加到nums[i], nums[i]);
+            result = max(result, dp);         
+        }
+        
+        return result;
+    }
+};
+
+
+
+LeetCode 15. Three Sum
+给出一个整型数组，寻找其中的所有的不同的三元组 (a, b, c)，使得 a + b + c = 0。
+
+示例：
+输入：nums = [-1, 0, 1, 2, -1, -4]
+输出：[[-1, 0, 1] , [-1, -1, 2]]
+
+// Time Complexity: O(nlogn)
+// Space Complexity: O(1)
+class Solution {
+public:
+    vector<vector<int>> threeSum(vector<int>& nums) {
+        vector<vector<int>> result;
+
+        sort(nums.begin(), nums.end());         // 先排序，时间复杂度：O(nlogn)
+        
+        // 双指针
+        for(int i = 0; i < nums.size(); i++) {
+            if(nums[i] > 0)
+                break;
+            
+            if(i != 0 && nums[i] == nums[i-1])
+                continue;
+            
+            int j = i+1;
+            int k = nums.size()-1;
+            while (j < k) {
+                
+                if(nums[i] + nums[j] + nums[k] < 0) {
+                    j++;
+                } else if(nums[i] + nums[j] + nums[k] > 0){
+                    k--;
+                } else {
+                    vector<int> temp;
+                    temp.push_back(nums[i]);
+                    temp.push_back(nums[j]);
+                    temp.push_back(nums[k]);
+                    
+                    result.push_back(temp);
+                    
+                    // 跳过相同的元素
+                    while (k > 0 && nums[k] == nums[k-1]) {
+                        k--;
+                    }
+                    while (j < nums.size()-1 && nums[j] == nums[j+1]) {
+                        j++;
+                    }
+                    
+                    j++;
+                    k--;
+                }
+            }
+        }
+        
+        return result;
+    }
+};
+
+
+
+LeetCode 18. Four Sum
+给出一个整型数组，寻找其中的所有的不同的四元组 (a, b, c, d)，使得 a + b + c + d 等于一个给定的数字 target。
+
+示例：
+输入：nums = [1, 0, -1, 0, -2, 2]，target = 0
+输出：[[-1, 0, 0, 1] , [-2,-1, 1, 2], [-2, 0, 0, 2]]
+
+
+
+LeetCode 16. Three Sum Closeest
+给出一个整型数组，寻找其中的所有的不同的三元组 (a, b, c)，使得 a + b + c 的值最接近另外一个给定的数字 target。
+
+示例：
+输入：nums = [-1, 2, -1, -4]，target = 1
+输出：2
+解释：-1 + 2 + 1 = 2
+
+
+
+LeetCode 453. Four Sum II
+给出四个整型数组 A，B，C，D，寻找有多少 i，j，k，l 的组合，使得 A[i] + B[j] + C[k] + D[l] == 0。
+其中 A，B，C，D 中均含有相同的元素个数 N，且 0 <= N <= 500。
+
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+
+using namespace std;
+
+// Time Complexity: O(n^2)
+// Space Complexity: O(n^2)
+class Solution {
+public:
+    int fourSumCount(vector<int>& A, vector<int>& B, vector<int>& C, vector<int>& D) {
+
+        unordered_map record;    // unorder_map 底层实现是 hashtable
+        // 将C、D中两两元素相加的和作为键，存入 record 中, 对应的值记录有多少个相同的和
+        for( int i = 0; i < C.size(); i++) {
+            for(int j = 0; j < D.size(); j++) {
+                record[C[i]+D[j]] ++; 
+            }
+        }
+
+        int count = 0;
+        for(int i = 0; i < A.size(); i++) {
+            for(int j = 0; j < B.size(); j++) {
+                int key = 0 - A[i] - B[j];
+                if(record.find(key) != record.end()) {
+                    count += record[key];
+                }
+            }
+        }
+    
+        return count;
+    }
+};
+
+
+LeetCode 49. Group Anagrams
+给出一个字符串数组，将其中所有可以通过颠倒字符顺序产生相同结果的单词进行分组。
+说明：所有输入均为小写字母。不考虑答案输出的顺序。
+
+示例：
+输入：["eat", "tea", "tan", "ate", "nat", "bat"]
+输出：[["ate", "eat", "tea"] , ["nat", "tan"], ["bat"]]
+
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+
+using namespace std;
+
+// Time Complexity: O(n * klogk)
+// Space Complexity: O(n * k)
+class Solution {
+public:
+    vector<vector<string>> groupAnagrams(vector<string> &nums) {
+        // unordered_map 底层使用的是 hashtable
+        unordered_map<string, vector<string>> map;
+
+        for(int i = 0; i < nums.size(); i++) {
+            string key = nums[i];
+            sort(key.begin(), key.end());
+            
+            map[key].push_back(nums[i]);
+        }
+
+        vector<vector<string>> res;
+        for(const auto& p: map) {
+            res.push_back(p.second);
+        }
+
+        return res;
+    }
+};
+
+
+
+LeetCode 447. Number of Boomerangs
+给出一个平面上的 n 个点（n <= 500），寻找存在多少个由这些点构成的三元组（pointA, pointB, pointC），使得 (pointA, pointB) 两点的距离等于(pointA, pointC) 两点的距离。所有点的坐标范围在 [-10000, 10000] 之间。
+
+示例：
+输入：[ [0,0], [1, 0], [2,0] ]
+输出：2
+解释：[[1, 0], [0, 0], [2, 0]] 和 [[1, 0], [2, 0], [0, 0]]
+
+思路：将观察点 points[i] 作为一个枢纽，对于每个观察点 points[i] , 遍历其余点到 points[i] 的距离，若存相等的距离 >= 2，则说明能够构成三元组。
+
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+
+using namespace std;
+
+// Time Complexity: O(n^2)
+// Space Complexity: O(n)
+class Solution {
+private:
+    int dis(const pair<int,int> pointA, cosnt pair<int,int> pointB) {
+        // 使用距离的平方，不进行开方，是为了避免出现小数
+        return (pointA.first - pointB.first) * (pointA.first - pointB.first) + (pointA.second - pointB.second) * (pointA.second - pointB.second);
+    }
+    
+public:
+    int numberOfBoomerangs(vector<pair<int, int>>& points) {
+
+        int result = 0;
+        // 统计坐标点 points[i] 到其余所有点的距离
+        for(int i = 0; i < points.size(); i++ ) {
+            unordered_map<int, int> record;
+            for(int j = 0; j < point.size(); j++) {
+                if(i != j) {
+                    int distance = dis(points[i],points[j]);
+                    record[distance]++;       // 距离作为键，相同距离的个数作为值
+                }
+            }
+            
+            for(unordered_map<int,int>::iterator iter = record.begin(); iter != record.end(); iter ++) {
+                if(iter->second > 1) {
+                    result += (iter->second) * (iter->second - 1);
+                }
+            }
+        }
+
+        return result;
+    }
+};
+
+
+LeetCode 149. Max Points on a line    (较难)
+给出 2D 平面上的 n 个点，求出最多有多少个点在一条直线上。
+
+Example 1：
+Input: [[1,1],[2,2],[3,3]]
+Output: 3
+Explanation:
+^
+|
+|        o
+|     o
+|  o  
++------------->
+0  1  2  3  4
+
+Example 2
+Input: [[1,1],[3,2],[5,3],[4,1],[2,3],[1,4]]
+Output: 4
+Explanation:
+^
+|
+|  o
+|     o        o
+|        o
+|  o        o
++------------------->
+0  1  2  3  4  5  6
+
+
+
+LeetCode 217. Contains Duplicate
+给定一个整型数组，若数组中存在相同的元素，则返回 true，否则返回 false；
+
+示例：
+输入：[1, 2, 3, 1]
+输出：true
+
+输入：[1, 2, 3, 4]
+输出：false
+
+输入：[1, 1, 1, 3, 3, 4, 3, 2, 4, 2]
+输出：true
+
+#include <iostream>
+#include <vector>
+#include <unordered_set>
+
+using namespace std;
+
+// Time Complexity: O(n)
+// Space Complexity: O(n)
+class Solution {
+public:
+    bool containsDuplicate(vector<int> &nums) {
+        unordered_set<int> record;
+        for(int i = 0; i < nums.size(); i++) {
+            if(record.find(nums[i]) != record.end()) {
+                return true;
+            }
+            
+            record.insert(nums[i]);
+        }
+
+        return false;
+    }
+};
+
+
+LeetCode 219. Contains Duplicate II
+给出一个整型数组 nums 和一个整数 k ，是否存在索引 i 和 j ，使得 nums[i] == nums[j] 且 i 和 j 之间的差不超过 k。
+
+#include <iostream>
+#include <vector>
+#include <unordered_set>
+
+using namespace std;
+
+// Time Complexity: O(n)
+// Space Complexity: O(k)
+class Solution {
+public:
+    bool containsNearbyDuplicate(vector<int>& nums, int k) {
+
+        // 使用 set 保存 k 个元素，作为滑动窗口
+        unodered_set<int> record;
+
+        // 当遍历到第 i 个元素时，查询滑动窗口 set 中是否有 nums[i] 的元素，
+        // 若有，即为找到了存在相同元素，且索引值小于等于 K 。
+        for(int i = 0; i < nums.size(); i++) {
+            if(record.find(nums[i]) != record.end()) { 
+                return true;
+            }
+
+            // 将第 i 个元素加入滑动窗口 set 中
+            record.insert(nums[i]); 
+
+            // 修改滑动窗口中元素的个数，最多只保留 k 个元素，这样就能保证当遍历到新的元素时，
+            // 若 set 中存在相同的元素，则他们索引之间的距离小于等于 k
+            if(record.size() == k + 1) {
+                record.erase(nums[i-k]);
+            }
+        }
+        
+        return false;
+    }
+};
+
+
+
+LeetCode 220. Contains Duplicate III
+给出一个整型数组 nums 和一个整数 k ，找出是否存在索引 i 和 j ，使得 nums[i] 和 nums[j] 之间的差不超过给定的整数 t ，且 i 和 j 之间的差不超过给定的整数 k。
+
+示例：
+输入：nums = [1, 2, 3, 1],  k = 3,  t = 0
+输出：true
+
+输入：nums = [1, 0, 1, 1],  k = 1,  t = 2
+输出：true
+
+输入：nums = [1, 5, 9, 1, 5, 9],  k = 2,  t = 3
+输出：false
+
+#include <iostream>
+#include <vector>
+#include <set>    // set 底层是使用平衡二叉树实现的查找表，查找的时间复杂度为O(logn)
+#include <cmath>
+
+using namespace std;
+
+// Time Complexity: O(nlogk)
+// Space Complexity: O(k)
+class Solution {
+public:
+    bool containsNearbyAlmostDuplicate(vector<int>& nums, int k, int t) {
+        set<long long> record;
+        // 当遍历到 nums[i] 时，查找 record 中是否存在某元素
+        // 使得 >= nums[i]-t 的最小值存在
+        // 且这个最小值也 <= nums[i] + t 的值，若存在即为查找成功
+        for(int i = 0; i < nums.size(); i++) {
+            if(record.lower_bound( (long long)nums[i] - (long long)t ) != record.end() 
+            && *record.lower_bound( (long long)nums[i] - (long long)t ) <= (long long)nums[i] + (long long)t ) { // 使用 long long 防止 int 类型的运算溢出
+                return true;
+            }
+
+            record.insert(nums[i]);
+            
+            // 保持滑动窗口 record 中最多有 K 个元素
+            if(record.size() == k + 1) {
+                record.erase(nums[i-k]);
+            }
+        }
+        
+        return false;
+    }
+};
+
+
+LeetCode 146. LRU缓存机制 （经典）
+运用你所掌握的数据结构，设计和实现一个 LRU (最近最少使用) 缓存机制。
+它应该支持以下操作：
+* 获取数据 get(key) 
+    * 如果密钥 (key) 存在于缓存中，则获取密钥的值（总是正数），否则返回 -1。
+* 写入数据 put(key, value) 
+    * 如果密钥已经存在，则变更其数据值；如果密钥不存在，则插入该组「密钥/数据值」。当缓存容量达到上限时，它应该在写入新数据之前删除最久未使用的数据值，从而为新的数据值留出空间。
+
+class LRUCache {
+private:
+    // 缓存大小
+    int capacity;    
+
+    // 双链表：装着 (key, value) 数据对
+    list<pair<int, int>> cache;
+
+    // 哈希表：key 映射到数据对 (key, value) 在 cache 中的位置
+    unordered_map<int, list<pair<int, int>>::iterator> map;
+
+public:
+    LRUCache(int capacity) {
+        this->capacity = capacity; 
+    }
+    
+    int get(int key) {
+        auto it = map.find(key);
+
+        // 访问的 key 不存在
+        if (it == map.end()) 
+            return -1;
+
+        // key 存在，把 (k, v) 换到队头
+        pair<int, int> kv = *map[key];
+        cache.erase(map[key]);
+        cache.push_front(kv);
+
+        // 更新 (key, value) 在 cache 中的位置
+        map[key] = cache.begin();
+
+        return kv.second; // value
+    }
+    
+    void put(int key, int value) {
+        /* 要先判断 key 是否已经存在 */ 
+        auto it = map.find(key);
+
+        if (it == map.end()) {
+            /* key 不存在，判断 cache 是否已满 */ 
+            if (cache.size() == capacity) {
+                // cache 已满，删除尾部的键值对腾位置
+                auto lastPair = cache.back();
+                int lastKey = lastPair.first;
+                
+                // cache 和 map 中的数据都要删除
+                map.erase(lastKey);
+                cache.pop_back();
+            }
+
+            // cache 没满，可以直接添加
+            cache.push_front(make_pair(key, value));
+            map[key] = cache.begin();
+        } 
+        else 
+        {
+            /* key 存在，更改 value 并换到队头 */
+            cache.erase(map[key]);
+            cache.push_front(make_pair(key, value));
+            map[key] = cache.begin();
+        }
+    }
+};
+
+
+
