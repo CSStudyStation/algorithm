@@ -1,0 +1,480 @@
+递归和回溯
+
+递归函数的两部分
+* 递归终止条件；
+* 递归过程；
+
+递归调用的一个重要特征 
+* 要返回（即回溯），回溯法是暴力解法的一个主要实现手段；
+
+递归函数使用场景
+* 子问题具体相同的处理结构；
+* 树形问题；
+* 排列问题；
+* 组合问题；
+
+树形问题
+
+Leetcode 17. Letter Combinations of a Phone Number
+给出一个数字字符串，返回这个数字字符串能表示的所有字母组合。
+
+示例：
+输入： s = "23"
+输出：["ad", "ae", "af", "bd", "be", "bf", "cd", "ce", "cf"]
+
+
+/*
+示例：23
+                                       2
+                         a             b             c
+
+ 
+                    3                   3                   3
+                d   e   f           d   e   f           d   e   f
+
+              ad   ae   af         bd   be  bf         cd   ed  cf    
+ 
+ */
+
+思路：
+digits[0…n-1] 表示数字字符串
+f(digits[0…n-1]) 表示 digits 所能代表的字母字符串
+
+f(digits[0…n-1])
+= letters(digits[0]) + f(digits[1…n-1])
+= letters(digits[0]) + letters[1] + f(digits[2…n-1])
+= …
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+class Solution {
+private:
+    // 定义全局变量，保存最终结果
+    vector<string> res;    
+    
+    // 定义数字到字符串的映射规则
+    const vector<string> letterMap = {
+        "_",      // 0
+        "",       // 1
+        "abc",    // 2
+        "def",    // 3
+        "ghi",    // 4
+        "jkl",    // 5
+        "mno",    // 6
+        "pqrs",   // 7
+        "tuv",    // 8
+        "wxyz",   // 9
+    };
+    
+    // 此时 p 中保存了从 digits[0…index-1] 翻译得到的一个字符串
+    // 逐个读取 digits[index] 匹配的字母，获得 digits[0…index] 翻译得到的解
+    void dfs(string& digits, int index, const string& p) {
+        if(index == digits.size()) {
+            res.push_back(p);             // 保存得到的一个解
+            return;
+        }
+    
+        char c = digits[index];           // 取出数字字符
+        string str = letterMap[c-'0'];    // 获得数字字符对应的字母字符串
+
+        for(int i = 0; i < str.size(); i++) {
+            dfs(digits, index+1, p + str[i]);
+        }
+    }
+
+public:
+    vector<string> letterCombinations(string digits) {
+        if(digits.size() == 0) 
+            return res;
+
+        dfs(digits, 0, "");
+
+        return res;
+    }
+};
+
+
+Leetcode 93. Restore IP Address
+给出一个数字字符串，为这个数字字符串加上三个点（.），使其成为一个合法的 IP 地址，返回所有的合法 IP 地址。
+
+输入：s = "25525511135"
+输出：[ "255.255.11.135”，"255.255.111.35" ]
+
+
+
+Leetcode 131. Palindrome Partitioning
+给出一个字符串，拆分这个字符串，使得所有拆分的子串都是回文字符串。返回所有的拆分的可能。
+
+输入： s = "aab"
+输出：[ ["aa", "b"], ["a", "a", "b"] ]
+
+
+
+排列问题
+
+Leetcode 46. Permutations    (经典)
+给定一个整型数组，其中的每一个元素都各不相同，返回这些元素所有排列的可能。
+
+输入：[1, 2, 3]
+输出：
+[ 
+    [1, 2, 3],
+    [1, 3, 2],
+    [2, 1, 3],
+    [2, 3, 1],
+    [3, 1, 2],
+    [3, 2, 1] 
+]
+
+                                                                                [ 1，2，3 ]
+
+                                                            /                      |                      \
+                                                          取出 1                  取出 2                  取出 3
+                                                          /                        |                        \ 
+
+                                                        [2，3]                  [1，3]                      [1, 2]
+
+                                                        /   \                   /   \                      /      \
+                                                     取出 2   取出 3          取出 1  取出 3              取出 1     取出 2
+                                                       /        \             /       \                  /          \
+
+                                                    [3]         [2]          [3]      [1]              [2]         [1]
+
+                                                    |            |            |        |                |            |
+                                                  取出 3        取出 2       取出 3    取出 1           取出 2         取出 1
+                                                    |            |            |        |                |            |
+
+                                                  123           132          213      231              312          321
+
+// 思路：状态转移函数
+f(nums[0…n-1]) = 取出一个数字 + f(nums[0…n-1] - 这个数字);
+
+#include<iostream>
+#include<vector>
+
+using namespace std;
+
+class Solution {
+private:
+    vector<vector<int>> res;
+
+    // 用来标记在某次排列时，nums 中哪个位置的数字已被选取过
+    vector<bool> used;
+
+    void generatePermutation(vector<int>& nums, vector<int>& p) {
+        // 递归终止条件，找到一个结果
+        if(p.size() == nums.size()) {
+            res.push_back(p);
+            return;
+        }
+        
+        // 递归过程
+        for(int i = 0; i < nums.size(); i++) {
+            if(!used[i]) {
+                used[i] = true;                  // 标记为已使用
+                p.push_back(nums[i]);            // 取出 nums[i] 
+
+                generatePermutation(nums, p);    // 进行递归
+                
+                used[i] = false;                 // 回溯，还原状态
+                p.pop_back();
+            }
+        }
+
+        return;
+    }
+
+public:
+    vector<vector<int>> permutation(vector<int>& nums) {
+        res.clear();
+
+        if(nums.size() == 0)
+            return res;
+        
+        // 初始化，表示所有的数字都没有被使用过
+        used = vector<bool>(nums.size(), false);
+
+        vector<int> p;                          // 保存每次递归到底时，找到的一个排列
+        generatePermutation(nums, p);
+        
+        return res;
+    }
+};
+
+
+
+Leetcode 47. Permutations II
+给定一个整型数组，其中可能有相同的元素，返回这些元素所有排列的可能。
+输入：[1, 1, 2]
+输出：[[1, 1, 2]，[1, 2, 1]，[2, 1, 1] ]
+ 
+
+
+组合问题
+
+Leetcode 77. Combinations
+给出两个整数 n 和 k ，求在 1… n 这 n 个数字中选出 k 个数字的所有组合。
+
+输入： n = 4，k = 2
+输出：[[1, 2]，[1, 3]，[1, 4]，[2, 3]，[2, 4]，[3, 4]]
+解释：即在  [ 1，2，3，4 ] 中取出 2 个数
+
+//                                                            在  [ 1，2，3，4 ] 中取出 2 个数
+
+//                                          /                 |                             |                   \
+//                                         /                  |                             |                    \
+//                                     取出 1                取出 2                       取出 3                 取出 4
+//                                     /                      |                             |                      \
+//                                    /                       |                             |                       \
+
+//             在 [2，3，4] 中取出 1 个数            在 [3，4] 中取出 1 个数              在 [4] 中取出 1 个数       在 [] 中取出 1 个数
+
+//     |            |               |                |              |                       |           
+//     |            |               |                |              |                       |
+//   取出 2        取出 3         取出 4             取出 3         取出 4                   取出 4
+//     |            |               |                |              |                       |
+//     |            |               |                |              |                       |
+//  [1, 2]       [1, 3]          [1，4]            [2, 3]         [2, 4]                  [3, 4]
+ 
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+class Solution {
+private:
+    vector<vector<int>> res;
+    vector<bool> used;
+    
+    // 从 nums 的 begin 位置开始，取出 k 个数字
+    void take(vector<int>& nums, int k, int begin, vector<int>& p) {
+        // 递归终止条件
+        if(p.size() == k) {
+            res.push_back(p);
+            return;
+        }
+
+        // 递归过程
+        for(int i = begin; i < nums.size(); i++) {
+            p.push_back(nums[i]);        // 选取 nums[i]
+            
+            take(nums, k, i+1, p);       // 由于前面的元素已经使用过，所以从 i+1 开始选取
+            
+            p.pop_back();                // 回溯
+        }
+    }
+
+public:
+    vector<vector<int>> combine(int n, int k) {
+        vector<int> nums;
+        for(int i = 1; i <= n; i++) {
+            nums[i-1] = i;
+        }
+        
+        res.clear();
+        if(nums.size() == 0)
+            return res;
+        
+        used = vector<bool>(nums.size(), false);
+        
+        vector<int> p;
+        take(nums, k, 0, p);
+        
+        return res;
+    }
+};
+
+
+
+Leetcode 39. Combination Sum
+给出一个无重复的数组 candidates，以及一个目标数 target。寻找该数组所有可以使数字和为 target 的组合。
+注意：candidates 中的每一个元素可以无限制重复被选取。
+
+示例：
+输入：candidates = [ 2，3，6，7 ]，target = 7
+输出：[[7]，[2，2，3]]
+
+                                                                          [2, 3, 6, 7], target = 7
+                                                                            
+                                选取 2                                                         选取 3                      选取 6                选取 7
+
+                             [2, 3, 6, 7]                                                   [2, 3, 6, 7]              [2, 3, 6, 7]          [2, 3, 6, 7]
+                             target = 5                                                       arget = 4               target = 1            target = 0
+
+    选取 2             选取 3                选取 6             选取 7
+
+ [2, 3, 6, 7]      [2, 3, 6, 7]         [2, 3, 6, 7]         [2, 3, 6, 7]
+  target = 3        target = 2          target = -1           target = -2
+                
+
+#include <iostream>
+#inlcude <vector>
+
+using namespace std;
+
+class Solution {
+private:
+    vector<vector<int>> res;
+
+    void take(vector<int>& nums, int target, int begin, vector<int>& p) {
+        if(target == 0) {
+            res.push_back(p);
+            return;
+        }
+
+        if(target < 0)
+            return;
+ 
+        for(int i = begin; i < nums.size(); i++) {
+            p.push_back(nums[i]);
+
+            take(nums, target-nums[i], i, p);
+
+            p.pop_back();
+        }
+    }
+
+public:
+    vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
+        res.clear();
+
+        vector<int> p;
+
+        take(candidates, target, 0, p);
+
+        return res;
+    }
+};
+
+
+
+Leetcode 40. Combination Sum II
+给出一个集合，其中元素可能相同，以及一个数字 T。寻找所有该集合中的元素组合，使得组合中所有的元素和为 T。
+注意：集合中每一个元素只可以使用一次。
+
+示例：
+输入： nums = [10，1，2，7，6，1，5 ]，T = 8
+输出：[[1，7]，[1，2，5]，[2，6]，[1，1，6]]
+
+
+
+Leetcode 216. Combination Sum III
+在 1 - 9 这 9 个数字中，选出 k 个数字，每个数字只能使用一次，使得其和为 n。
+
+示例：
+输入：n = 7，k = 3
+输出：[[1，2，4]]
+
+输入：n = 9，k = 3
+输出：[[1，2，6]，[1，3，5]，[2，3，4]]
+
+
+
+Leetcode 78. Subsets    (经典)
+给出一个集合，其中所有的元素各不相同。求出该集合的所有子集。
+
+示例：
+输入：nums = [1，2，3]
+输出：[[1]，[2]，[3]，[1，2]，[1，3]，[2，3]，[1，2，3]，[]]
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+class Solution {
+private:
+    vector<vector<int>> res;
+
+    // 从 nums 的 begin 位置开始，每次选取 count 个元素作为子集，放入数组 p 中
+    void take(vector<int>& nums, int count, int begin, vector<int>& p) {
+        if(p.size() == count) {
+            res.push_back(p);
+            return;
+        }
+
+        for(int i = begin; i < nums.size(); i++) {
+            p.push_back(nums[i]);           // 放入 p 中
+            
+            take(nums, count, i+1, p);      // 从下一个元素开始选择
+
+            p.pop_back();                   // 回溯
+        }
+    }
+
+public:
+    vector<vector<int>> subsets(vector<int>& nums) {
+        res.clear();
+
+        vector<int> p;                      // 临时保存选取的子集
+        // 每次取 i 个元素作为子集
+        for(int i = 0; i <= nums.size(); i++) {
+            take(nums, i, 0, p);
+        }
+
+        return res;
+    }
+};
+
+
+Leetcode 90. Subsets II
+给出一个集合，其中所有的元素有可能相同。求出该集合的所有子集。
+
+示例：
+输入：nums = [1，2，2]
+输出：[[1]，[2]，[1，2]，[2，2]，[1，2，2]，[]]
+
+
+
+
+Leetcode 401. Binary Watch     （经典）
+有一块二进制表，上方有 4 个 LED 灯，用来表示小时数：0-11，下方有 6 个 LED 灯，用来表示分钟数 0-59.
+现在给出这块二进制表上有 n 个灯亮着，问它能表示的所有时间。      
+
+举例：如图所示的二进制表，显示的时间是 3:25。
+                                        8         4          2         1
+                                        O         O          .         .
+                                        O     O     O     O      O     O
+                                       32     16    8     4      2     1
+                              
+输入：n = 1
+输出：[ "1：00"，"2：00"，"4：00"，"8：00"，"0：01"，"0：02"，"0：04"，"0：08"，"0：16"，"0：32" ]
+
+
+
+
+Leetcode 130 Surrounded Regions
+给定一个二维数组，只含有 X 和 O 两个字符。找到所有被 X 包围的 O 字符组成的区域，将其中的 O 翻转成 X。
+示例：
+输入：
+X X X X
+X O O X
+X X O X
+X O X X
+
+输出：
+X X X X
+X X X X
+X X X X
+X O X X
+
+O O O O O O O O O
+X X X X X X X X O
+O O O O O O O X O
+O X X X X X O X O
+O X O O O X O X O
+O X O X O X O X O
+O X O X X X O X O
+O X O O O O O X O
+O X X X X X X X O
+O O O O O O O O O
+注意：
+你可以看出来，其中的O构建成了一条路径。你可以想象，如果从(0,0)点的O开始进行dfs的过程，这个矩阵里有多少个O，我们的 dfs 就要向下递归多少层。递归层数的数量级是O(n*m)的。当我们的board的n和m非常大的时候，递归深度就太大了！递归深度过大造成了系统栈的溢出，导致了Runtime Error!
+
+事实上，这个测试用例非常好地反映了递归进行dfs遍历的缺点。如何解决？你需要将dfs改成bfs
+
+
+LeetCode 417 Pacific Atlantic Water Flow
+给定一个二维数组，其中的数字代表其地形高度。假设左上角为太平洋；右下角为大西洋。水可以向上下左右四个方向的同等高度或者更低高度流动。求出二维数组中水可以同时流向太平洋和大西洋的地形坐标。
