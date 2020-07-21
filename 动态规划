@@ -1,0 +1,1282 @@
+动态规划
+
+斐波那契数列 Fibonacci Sequence 
+定义：
+            F(0) = 0,                             n = 0
+            F(1) = 1,                             n = 1
+            F(n) = F(n-1) + F(n-2),               n >= 2
+
+根据定义
+// Time Complexity: O(2^n)
+long fib(int n) {
+    if (n == 0) {
+        return 0;
+    }
+    if (n == 1) {
+        return 1;
+    }
+    count++;                                      // 统计被调用的次数
+    return fib(n-1) + fib(n-2);
+}
+
+// 全局变量，记录 fib(n) 函数调用的次数
+int count = 0; 
+
+int main() {
+    int n = 20;
+
+    // 计时器
+    time_t start_time = clock();
+    int res = fib(n);
+    time_t endTime = clock(); 
+    
+    cout << "fib(" << n << ")" << res << endl;
+    cout << "time: " << (endTime-startTime)/CLOCKS_PER_SEC  << endl;
+    cout << "rum: " << count << " times" << endl;
+}
+
+
+递归树结构
+                                                                    F(n)
+                                                          /                       \
+                                 F(n-1)                                                         F(n-2)
+                            /                \                                            /                 \
+               F(n-2)                         F(n-3)                              F(n-3)                          F(n-4)   
+           /          \                      /        \                         /         \                     /         \
+        F(n-3)      F(n-4)              F(n-4)         F(n-5)               F(n-4)      F(n-5)             F(n-5)       F(n-6)
+
+上图计算过程显示：存在大量的重叠子问题。
+
+记忆化搜索
+* 在递归的基础上添加上记忆化的过程；
+* 利用空间换时间；
+// Time Complexity: O(n)
+// Space Complexity: O(n)
+
+// 定义一个全局的数组, memory[n] = fib(n)
+vector<long long> memory;
+memory = vector<long long>(n+1, -1);     // 初始化都为 -1
+
+long long fib(int n) {
+    
+    if (n == 0) {
+        return 0;
+    }
+    if (n == 1) {
+        return 1;
+    }
+    
+    if (memory[n] == -1) {
+        memory[n] = fib(n-1) + fib(n-2);
+    }
+    
+    return memory[n];
+}
+
+递归是自上而下的解决问题；
+换句话说，我们没有从一个最基本的问题开始解决，而是假设基本的问题已经解决了；
+例如，计算 fib(n) 时，我们假设 fib(n-1) 和 fib(n-2) 已经有解了；
+
+动态规划是自下而上的解决问题；
+我们先求解小数据量下这个问题的结果，之后层层的递推，解决更大的数据量下的这个问题。
+
+long long fib2(int n) {
+    vector<long long> memory(n+1, -1);
+    
+    memory[0] = 0;
+    memory[1] = 1;
+    
+    for (int i = 2; i<= n; i++) {
+        memory[i] = memory[i-1] + memory[i-2];
+    }
+    
+    return memory[n];
+}
+
+动态规划的定义
+* 将原问题拆解成若干的子问题，同时保存子问题的答案，使得每个子问题只求解一次，最终获得原问题的答案。
+
+大多数动态规划的问题本质都是一个递归的问题，只不过是在这种递归的过程中可以发现重叠子问题；
+
+最优子结构
+通过求子问题的最优解，可以获得原问题的最优解。
+
+解决方案
+1. 使用递归+记忆化搜索；
+2. 使用动态规划；
+                                                                       递归+记忆化搜索       (自顶向下的过程，更加容易)
+递归问题中   ------->     若存在重叠子问题    -------解决手段------>           
+                                                                       动态规划             (自底向上的过程)
+
+
+LeetCode 70 Climbing Stairs
+有一个楼梯，总共有 n 阶台阶。每一次，可以上一个台阶，也可以上两个台阶。爬上这样的楼梯，一共有多少种不同的方法？
+
+递归树：
+
+                                                                                   爬上 n 阶台阶
+
+                                                                    /                                   \
+                                                                   /                                     \
+                                                              爬 1 阶台阶                               爬 2 阶台阶
+                                                                 /                                         \
+                                                                /                                           \
+
+                                                    爬上 n-1 阶台阶                                        爬上 n-2 阶台
+
+                                                /                \                                       /            \
+                                               /                  \                                     /              \
+                                          爬 1 阶台阶           爬 2 阶台阶                            爬 1 阶台阶      爬 2 阶台阶
+                                             /                      \                                 /                  \
+                                            /                        \                               /                    \
+
+                                   爬上 n-2 阶台阶             爬上 n-3 阶台阶                  爬上 n-3 阶台阶            爬上 n-4 阶台阶
+
+如图所示：同样含有大量的重叠子结构，所以会存在大量重复的计算；
+
+#include <iostream>
+
+using namespace std;
+
+// 使用定义进行递归
+class Solution {
+    int climbStairs(int n) {
+        if(n == 1) {
+            return 1;
+        }
+        if(n == 2) {
+            return 2;
+        }
+    
+        return climbStairs(n-1) + climbStairs(n-2);
+    }
+};
+
+
+// 递归过程中加入记忆化搜索
+// 定义一个全局的记忆化搜索数组
+vector<int> memory;    
+memory = vector<int>(n + 1, -1); // 初始化
+
+int climbStairs(int n) {
+    if(n == 1) {
+        return 1;
+    }
+    if(n == 2) {
+        return 2;
+    }
+    
+    if(memeory[n] == -1) {
+        memory[n] = climbStairs(n-1) + climbStairs(n-2);
+    }
+    
+    return memory[n];
+}
+
+
+// 使用动态规划
+int climbStairs(int n) {
+    vector<int> memory(n+1, -1);
+    
+    memory[1] = 1;
+    memory[2] = 2;
+    for (int i = 3; i <= n; i++) {
+        memory[i] = memory[i-1] + memory[i-2];
+    }
+    
+    return memory[n];
+}
+
+
+LeetCode 120 Triangle（非常经典）
+给定一个三角形的数字阵列，选择一条自顶向下的路径，使得沿途的所有数字之和最小。
+规则：
+每一步只能移动到下一行中相邻的节点上
+相邻的节点 在这里指的是 下标 与 上一层节点下标 相同或者等于上一层节点下标 + 1 的两个节点。（即可以向正下方，或者是右下方移动）
+
+示例：
+输入：
+[
+     [2],
+    [3, 4],
+   [6, 5, 7], 
+  [4, 1, 8, 3]
+]
+输出：11，其中最小路径和为： （2 + 3 + 5 + 1 = 11）
+
+解释：
+[                                                     [
+    [2]                                                  [2]
+    [3 , 4]                   ———>                       [5, 6]
+    [6 , 5 , 7]                                          [11, 10, 13]
+    [4 , 1 , 8 , 3]                                      [15, 11, 18, 16]
+]                                                     ]
+状态转移方程：triangle[i][j] = triangle[i][j] + min(triangle[i-1][j-1], triangle[i-1][j]);
+
+思路：
+1. 先使用递归的方式求解，然后分析其中的重叠子问题，将其改进为最优化搜索。（递归求解，自顶向下的思路）
+2. 使用自底向上的思路，只使用循环的方式求解。（动态规划求解）
+
+#include <iostream>
+#include <vector>
+using namespace std;
+
+// Time Complexity: O(n)    where n is the count of the triangle
+// Space Complexity: O(1)
+class Solution {
+public:
+    int minimumTotal(vector<vector<int>> &triangle) {        // 从上往下进行计算
+        // 二维数组的行数
+        int n = triangle.size();
+    
+        if (n == 0) {
+            return 0;
+        }
+    
+        // 第 0 行只有一个元素
+        // 从第一行开始处理，使得 triangle[i][j] 存储走到（i，j）这个位置的最小和
+        for (int i = 1; i < n; i++) {
+
+            int m = triangle[i].size();                     // 第 i 行的元素个数
+        
+            // 对于每行的首元素，只能从上一行的第一个元素走过来
+            triangle[i][0] += triangle[i-1][0];
+        
+            // 对于每行的最后一个元素，只能从上一行的最后一个元素走过来
+            triangle[i][m-1] += triangle[i-1][m-2];
+        
+            // 对于每行中间的元素，只能从上一行的 j-1 和 j 位置过来
+            for(int j = 1; j < m-1; j++) {
+                triangle[i][j] += min(triangle[i-1][j-1], triangle[i-1][j]);
+            }
+        }
+    
+        // 由于相加后的值保存到了最后一行中，所以从最后一行取出最小值即可
+        int res = triangle[n-1][0];
+        for (int i = 1; i < triangle[n-1].size(); i++) {
+            res = min(res, triangle[n-1][i]);
+        }    
+    
+        return res;
+    }
+};
+
+// Time Complexity: O(n)
+// Space Complexity: O(1)
+class Solution {
+public:
+    int minimalTotal(vector<vector<int>>& triangle) {        // 自底向上开始计算最小值
+        if(triangle.size() == 0)
+            return 0;
+
+        for(int i = triangle.size()-2; i >= 0; i--) {
+            for(int j = 0; j < triangle[i].size(); j++) {
+                triangle[i][j] += min(triangle[i+1][j], triangle[i+1][j+1]);
+            }
+        }
+
+        return triangle[0].size() > 0 ? triangle[0][0] : 0;
+    }
+};
+
+
+LeetCode 64 Minimum Path Sum
+给出一个 m * n 的矩阵，其中每一个格子包含一个非负整数。寻找一条从左上角到右下角的路径，使得沿路的数字和最小。
+说明：每次只能向下或者向右移动一步。
+
+示例：
+输入：
+[                                                                                        [
+    [1    3    7    4    2    0],                                                            [1     4     11     15     17    17],
+    [9    2    0    0    0    0],                                                            [10    6      6      6      6     6],
+    [5    0    3    0    0    0],                                                            [15    6      9      6      6     6],
+    [1    0    0    4    0    0]                                                             [16    6      6     10      6     6]
+]                                                                                        ]
+输出：6
+
+输入:
+[                                                                                        [
+  [1,    3,    1],                                                                          [1    4    5],
+  [1,    5,    1],                                                                          [2    7    6],
+  [4,    2,    1]                                                                           [6    8    7]
+]                                                                                        ]
+输出: 7
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+class Solution {
+public:
+    int minPathSum(vector<vector<int>>& grid) {    // 自顶向下进行计算
+        int rows = grid.size();
+        if(rows == 0)
+            return 0;
+        
+        // 特殊处理第一行
+        for(int i = 1; i < grid[0].size(); i++) {
+            grid[0][i] += grid[0][i-1]; 
+        }
+
+        // 从第二行开始计算
+        for(int i = 1; i < rows; i++) {        
+            grid[i][0] += grid[i-1][0];
+
+            // 从每一行的第二个元素开始
+            for(int j = 1; j < grid[i].size(); j++) {
+                grid[i][j] += min(grid[i-1][j], grid[i][j-1]);
+            }
+        }
+
+        int lastRowCount = grid[rows-1].size();
+        return grid[rows-1][lastRowCount-1];
+    }
+};
+
+
+LeetCode 343 Integer Break
+给定一个正整数 n, 可以将其分割成多个数字的和，若要让这些数字的乘积最大，求分割的方法（至少要分成两个数）。算法返回这个最大的乘积。
+
+例如：
+N = 2 ，则返回 1 （2 = 1 + 1）
+N = 3 ，2（3 = 1 + 2 ），2（3 = 2 + 1）
+N = 4， 3（4 = 1 + 3），4（4 = 2 + 2），3（4 = 3 + 1）
+N = 10，则返回 36（10 = 3 + 3 + 4）
+                                                                            分割 n
+
+                1+?                                                2+?                 3+?                4+?           …           n-1+ ?  
+
+             分割 n-1                                            分割 n-2             分割 n-3            分割 n-4        ...         分割  1
+
+    1+?         2+?       ...    n-2+?
+
+  分割n-2     分割 n-3     ...    分割 1
+
+最优子结构：通过求子问题的最优解，可以获得原问题的最优解。
+
+#include <iostream>
+#include <vector>
+#include <cassert>
+
+using namespace std;
+
+// 递归 + 记忆化搜索
+class Solution {
+private:
+    vector<int> memo;
+    int max3(int a, int b, int c) {
+        int value = max(a, b);
+        return max(value, c);
+    }
+    
+    int break(int n) {
+        if(n == 2)
+            return 1;
+
+        if(memo[n] != -1)      // 若结果存在，直接返回
+            return memo[n];
+        
+        int res = 0;
+        for(int i = 1; i <= n-1; i++) {
+            res = max3(res, i*(n-i), i*break(n-i))
+        }
+        
+        memo[n] = res;        // 记录结果
+        return res;
+    }
+
+public:
+    int integerBreak(int n) {
+        memo = vector<int>(n+1, -1);
+        return break(n);
+    }
+};
+
+
+// 动态规划，自底向上的方式求解，即先解决最基本的问题，然后逐步递推求解
+// Time Complexity: O(n^2)
+// Space Complexity: O(n)
+class Solution {
+private:
+    int max3(int a, int b, int c) {
+        int value = max(a, b);
+        return max(value, c);
+    }
+
+public:
+    int integerBreak(int n) {
+        // 将数字 n 分割（至少分割成两部分）后得到的最大乘积
+        vector<long long> memory(n+1, -1);
+
+        memory[1] = 1; // 已知的最基本问题的解
+        memory[2] = 1;
+
+        // 从已知的最基本问题的解，逐步递推
+        for(int i = 3; i <= n; i++) {
+            // 对 i 进行分割
+            for(int j = 1; j <= i-1; j++) {    // 求解 memory[i]
+                memory[i] = max3(memory[i], j*(i-j), j*memory[i-j]);
+            }
+        }
+
+        return memory[n];
+    }
+};
+
+
+LeetCode 62 Unique Paths 
+有一个机器人，从一个 m * n 的矩阵的左上角出发，机器人每次只能向下或者向右移动一步，试图到达这个矩阵的右下角。
+问一共有多少种不同的路径？
+
+[ 0 0 0 0 0 0 ]                                            [ 1     1      1       1       1          1]
+[ 0 0 0 0 0 0 ]                                            [ 1     2      3       4       5          6]
+[ 0 0 0 0 0 0 ]                                            [ 1     3      6      10      15         21]
+[ 0 0 0 0 0 0 ]                                            [ 1     4     10      20      35         56]
+                                                           [ 1     5     15      35      70        126]
+                                                           [ 1     6     21      56     126        252]
+                                                           [ 1     7     28      84     210        462]
+分析：
+A[0][n] = 1
+A[m][0] = 1
+A[m][n] = A[m-1][n] + A[m][n-1]
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+// 使用二维数组作为辅助空间
+// Time Complexity: O(m*n)
+// Space Complexity: O(m*n)
+class Solution {
+public:
+    int uniquePaths(int m, int n) {
+        if(m == 0)
+            return 0;
+        if(n == 0)
+            return 0;
+
+        // 使用二维数组作为辅助空间
+        vector<vector<int>> temp(m, vector<int>(n, 0));
+
+        // 将二维数组的第一行全部赋值为 1
+        for(int i = 0; i < n ; i++) {
+            temp[0][i] = 1;
+        }
+        // 将二维数组的第一列全部赋值为 1 
+        for(int i = 0; i < m; i++) {
+            temp[i][0] = 1;
+        }
+
+        for(int i = 1; i < m; i++) {
+            for(int j = 1; j < n; j++) {
+                temp[i][j] = temp[i-1][j] + temp[i][j-1];
+            }
+        }
+
+        return temp[m-1][n-1];
+    }
+};
+
+
+//    [ 0 0 0 0 0 0 ]               [1     1     1        1       1           1]
+//    [ 0 0 0 0 0 0 ]               [1     2     3        4       5           6]
+//    [ 0 0 0 0 0 0 ]               [1     3     6       10      15          21]
+//    [ 0 0 0 0 0 0 ]               [1     4     10      20      35          56]
+// A[0] = 1
+// A[n] = A[n] + A[n-1] , n >= 1
+
+// 使用一维数组作为辅助空间
+// Time Complexity: O(m*n)
+// Space Complexity: O(n)
+class Solution {
+public:
+    int uniquePaths(int m, int n) {
+        if(m == 0)
+            return 0;
+
+        if(n == 0)
+            return 0;
+
+        vector<int> temp(n, 0);
+        temp[0] = 1;
+
+        for(int i = 0; i < m; i++) {
+            for(int j = 1; j < n; j++) {
+                temp[j] = temp[j] + temp[j-1];
+            }
+        }
+
+        return temp[n-1];
+    }
+};
+
+
+LeetCode 63 Unique Paths II
+有一个机器人从一个 m * n 的矩阵的左上角出发，机器人每次只能向下或者向右移动一步，机器人试图到达这个矩阵的右下角。
+现在考虑矩阵中的一些格子里有障碍物，问一共有多少种不同的路径？
+
+注意：网格中的障碍物和空位置分别用 1 和 0 表示。
+
+输入：1
+[                                               [                                                     [
+    [0, 0, 0]                                     [0,   0,  0]                                          [1, 1, 1]
+    [0, 1, 0]           ——>                       [0,  -1,  0]                  ——>                     [1, 0, 1]
+    [0, 0, 0]                                     [0,   0,  0]                                          [1, 1, 2]
+]                                               ]                                                     ]
+输出：2
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+class Solution {
+public:
+    int uniquePathsWithObstacles(vector<vector<int>>& obstacleGrid) {
+        int m = obstacleGrid.size();
+        if(m == 0)
+            return 0;
+        
+        int n = obstacleGrid[0].size();
+        
+        // 障碍物改用 -1 表示
+        for(int i = 0; i < m; i++) {
+            for(int j = 0; j < n; j++) {
+                if(obstacleGrid[i][j] == 1) {
+                    obstacleGrid[i][j] = -1;
+                }
+            }
+        }
+
+        // 特殊处理起点位置的可达性
+        if(obstacleGrid[0][0] == 0) {   
+            obstacleGrid[0][0] = 1;     // 表示有一条可达路径
+        }
+
+        // 第一行的不可达元素使用 -1 表示，可达元素只有一种到达方案，所以置为 1
+        for(int i = 1; i < n; i++) {
+            if(obstacleGrid[0][i] != -1) {
+                if(obstacleGrid[0][i-1] == -1) {
+                    obstacleGrid[0][i] = -1;
+                }
+                else {
+                    obstacleGrid[0][i] = 1;
+                }
+            }
+        }
+
+        // 第一列的不可达元素使用 -1 表示，可达元素只有一种到达方案，所以置为 1
+        for(int j = 1; j < m; j++) {
+            if(obstacleGrid[j][0] != -1) {
+                if(obstacleGrid[j-1][0] == -1) {
+                    obstacleGrid[j][0] = -1;
+                }
+                else {
+                    obstacleGrid[j][0] = 1;
+                }
+            }
+        }
+
+        for(int i = 1; i < m; i++) {
+            for(int j = 1; j < n; j++) {
+                if(obstacleGrid[i][j] != -1 ) {
+                    // 从上方和左方都不可到达
+                    if(obstacleGrid[i-1][j] == -1  && obstacleGrid[i][j-1] == -1) {
+                        obstacleGrid[i][j] = -1;
+                    }
+                    // 从上方不可到达，只能从左方到达
+                    else if(obstacleGrid[i-1][j] == -1  && obstacleGrid[i][j-1] > 0) {
+                        obstacleGrid[i][j] = obstacleGrid[i][j-1];
+                    }
+                    // 从左方不可到达，只能从上方到达
+                    else if(obstacleGrid[i][j-1] == -1 && obstacleGrid[i-1][j] > 0) {
+                        obstacleGrid[i][j] = obstacleGrid[i-1][j];
+                    }
+                    // 从上方和左方都可以到达
+                    else {
+                        obstacleGrid[i][j] = obstacleGrid[i-1][j] + obstacleGrid[i][j-1];
+                    }   
+                }
+            }
+        }
+        
+        return obstacleGrid[m-1][n-1] > 0 ? obstacleGrid[m-1][n-1] : 0;
+    }
+};
+
+
+LeetCode 279 Perfect Squares
+给出一个正整数 n , 寻找最少的完全平方数，使它们的和为 n.
+完全平方数： 1，4，9，16 …….
+
+示例：
+12 = 4 + 4 + 4；
+13 = 4 + 9；
+14 = 4 + 9 + 1；
+
+                                                                                n
+
+                                                                                |
+                                                                                |     一步就能走到 n 的数字
+                                                                                |
+
+                                n-1            n- 2^2            n - 3^2        n - 4^2        n - 5^2 ….
+
+
+
+LeetCode 91 Decode Ways
+一个字符串，包含 A—Z 的字母。每个字母可以和 1—26 的数字对应，如 A —> 1, B —> 2; … ; Z —> 26 给出一个数字字符串，问我们有多少种方法可以解析这个数字字符串？
+
+示例：
+输入：12
+输出：2
+我们可以将它解析成 AB (1, 2) 或者 L（12）
+
+
+
+LeetCode 198 House Robber
+你是一个专业的小偷，计划偷窃沿街的房屋。每间屋内都藏有一定的现金，影响你偷窃的唯一制约因素就是相邻的房屋装有相互连通的防盗系统，如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警。
+给定一个代表每个房屋存放金额的非负整数数组，计算在你不触动警报装置的情况下，一夜之内能够偷窃到的最高金额。
+
+示例：
+输入：[1, 2, 3, 1]
+输出：4
+解释：偷窃到的最高金额：1 + 3 = 4
+
+输入：[2, 7, 9, 3, 1]
+输出：12
+解释：偷窃到的最高金额 = 2 + 9 + 1 = 12 。
+
+对于第 N 个房间，有两种选择方案。
+方案一：偷窃，那么此时得到的最高金额为 nums[n-1] + robber(nums, n-2)
+方案二：不偷窃，那么此时得到的最高金额为偷窃前 n-1 间房的最高金额，即 robber(nums, n-1)
+
+状态转移方程：F(n) = max(F(n-1), Value(n) + F(n-2))
+// 递归+记忆化搜索，自顶向下解决问题
+// Time Complexity: O(n)
+// Space Complexity: O(n)
+class Solution {
+private:
+    vector<int> memory;    // 记忆化数组
+
+    // 偷窃到第 N 个房间后，一共得到的最高金额
+    int robber(vector<int>& nums, int n) {
+        if(n == 0)
+            return 0;
+        if(n == 1)
+            return nums[0];
+        
+        // 加入记忆化搜索，memory[n-1] 中保存的是偷窃第 n 间房后得到的最高金额
+        if(memory[n-1] != -1)
+            return memory[n-1];
+            
+        memory[n-1] = max(robber(nums, n-1), nums[n-1] + robber(nums, n-2));
+        
+        return memory[n-1];
+    }
+
+public:
+    int rob(vector<int>& nums) {
+        int n = nums.size();
+        if(n == 0)
+            return 0;
+        
+        memory = vector<int>(n, -1);
+
+        return robber(nums, n);
+    }
+};
+
+
+// 动态规划，自底而上求解问题
+// Time Complexity: O(n)
+// Space Complexity: O(n), 其实可以优化到O(1)
+
+class Solution {
+public:
+    int rob(vector<int>& nums) {
+        int n = nums.size();
+        if(n == 0)
+            return 0;
+        
+        vector<int> memory(n, 0);
+        memory[0] = nums[0];                        // 先求解最基本的问题
+        if(n >= 2)
+            memory[1] = max(nums[0], nums[1]);
+
+        for(int i = 2; i < n; i++) {                // 逐步递推，求解更大规模的问题
+            memory[i] = max(memory[i-1], nums[i] + memory[i-2]);
+        }
+
+        return memory[n-1];
+    }
+};
+
+LeetCode 213 House Robber II
+
+
+LeetCode 337 House Robber III
+
+
+LeetCode 309 Best Time to Buy and Sell Stock with CoolDown
+
+
+
+0-1 Knapsack Problem  0-1 背包问题 （非常经典）
+有一个背包，它的容量为C（Capacity），现在有 n 件不同的物品，编号为 0 … n-1，其中每一件物品的重量为 W(i)，价值为 V(i)。
+问可以向这个背包中盛放哪些物品，使得在不超过背包容量的基础上，物品的总价值最大。
+
+暴力解法：
+对于每一件物品来说，可以放进背包，也可以不放进背包，所以有 2 ^ n 个组合。
+对于每一种组合还需要计算其总重量是否超过了背包的容量。而计算每一种组合总重量的时间复杂度为 O(n)。
+所以计算所有组合的时间复杂度为 O( (2 ^ n) * n )。
+
+
+此题能否使用贪心算法？即优先放入单位价值最大的物品？
+答案：不能使用贪心算法。
+
+反例：
+有一个容量为 5 的背包，3件不同的物品，其重量分别为 1、2、3，对应的价值分别为 6、10、12；
+
+  id                0         1         2
+  weight            1         2         3
+  value             6        10        12
+  value/weight      6         5         4
+
+由于贪心算法采用先放入单位价值最大的物品，所以背包中的价值为：6 + 10 = 16；
+而背包中其实是可以 id = 1 和 id = 2 的物品，使得背包盛放的物品达到最大容量 5，价值为：10 + 12 = 22；
+
+
+设定问题的状态
+递归函数要做什么事情，以及所需要的的参数，通常参数的个数意味着要解决这个问题所要满足的约束条件。
+F(n, C) 定义为考虑将 n 个物品放进容量为 C 的背包，使得背包中物品的总价值最大。
+
+设定状态转移
+F(i, c) = max( 
+                  F(i-1, c)，                   策略一，id = i 的物品不放入背包中，此时背包中的总价值最大
+                  v(i) + F(i-1，c-w(i))         策略二，id = i 的物品放入背包中，此时背包中的总价值最大
+             );
+
+// 递归，自顶而下进行求解；
+#include <iostream>
+#include <vector>
+#include <cassert>
+
+using namespace std;
+
+class Solution {
+private:
+    // 将 n 件不同的物品，放入容量为 c 的背包中，求背包能盛放的最大价值；
+    long zeroOne(vector<int>& weights, vector<int>& values, int n, int c) {
+        if(c <= 0)
+            return 0;
+
+        if(n == 1)
+            return values[0];
+        
+        // 策略一：第 n 个物品不放入背包中，则背包中前 n-1 个物品使用了容量为 c 
+        long res = zeroOne(weights, values, n-1, c);
+        
+        // 策略二：第 n 个物品放入背包中，则背包中前 n-1 个物品使用了容量为 c-weights[n-1]
+        if(c-weights[n-1] >= 0) {
+            long two = values[n-1] + zeroOne(weights, values, n-1, c-weights[n-1]);
+            res = max(res, two);    // 择优
+        }
+        
+        return res;
+    }
+
+public:
+    long maxValue(vector<int>& weights, vector<int>& values, int c) {
+        // 确保物品重量数组和价值数组元素个数相同
+        assert(weights.size() == values.size());
+
+        // 物品总数
+        int n = weights.size();
+        return zeroOne(weights, values, n, c);
+    }
+};
+
+
+// 加入记忆化搜索的过程
+
+使用动态规划求解
+F(i, c) = max( 
+                  F( i-1, c )，                     策略一，id = i 的物品不放入背包中，此时背包中的总价值最大
+                  v( i ) + F( i-1，c-w(i) )         策略二，id = i 的物品放入背包中，此时背包中的总价值最大
+             );
+
+    N 件不同物品                                                     背包容量 c
+id    weight    value                    0           1           2           3             4             5
+0       1          6                     0           6           6           6             6             6
+1       2         10                     0           6          10          16            16            16
+2       3         12                     0           6          10          16            18            22
+
+#include <iostream>
+#include <vector>
+#include <cassert>
+
+using namespace std;
+
+// Time Complexity: O(n * c)
+// Space Complexity: O(n * c)
+class Solution {
+public:
+    long maxValue(vector<int>& weights, vector<int>& values, int c) {
+        assert(weights.size() == values.size());
+
+        int n = weights.size();
+        if(n == 0)
+            return 0;
+
+        // 申请辅助空间
+        vector<vector<long>> memory(n, vector<long>(c+1, 0));
+        
+        // 将第一个物品放入容量为 i 的背包中，先求解最基本的问题
+        for(int i = 0; i <= c; i++) {
+            if(weights[0] <= i)
+                memory[0][i] = values[0];
+        }
+        
+        // 逐层递推，将第 N 件物品加入背包中
+        for(int i = 1; i < n; i++) {              
+            for(int j = 1; j <= c; j++) {                                 // 背包的当前容量
+            
+                memory[i][j] = memory[i-1][j];                            // 策略一
+
+                if(j - weights[i] >= 0) {                                 // 策略二
+                    long two = values[i] + memory[i-1][j-weights[i]];
+                    memory[i][j] = max(memory[i][j], two);                // 择优
+                }
+            }
+        }
+
+        return memory[n-1][c];
+    }
+};
+
+
+优化 0-1 背包问题
+* 优化辅助空间，根据上面表格的层层递推关系，可以只使用 2 行，C+1 列的二维数组辅助空间；
+* 2 行辅助空间交替使用即可。
+
+              N 件不同物品                                         背包容量 c
+          id    weight    value                       0       1       2       3       4       5
+          
+偶数行      0      1         6                         0       6       6       6       6       6
+奇数行      1      2        10                         0       6      10      16      16      16
+           2      3        12
+
+
+#include <iostream>
+#include <vector>
+#include <cassert>
+
+using namespace std;
+
+// Time Complexity: O(n * c)
+// Space Complexity: O(2 * c)，即 O(c)
+class Solution {
+public:
+    long maxValue(vector<int>& weights, vector<int>& values, int c) {
+        assert(weights.size() == values.size());
+
+        int n = weights.size();
+        if(n == 0)
+            return 0;
+
+        // 申请辅助空间
+        vector<vector<long>> memory(2, vector<long>(c+1, 0));
+        
+        // 将第一个物品放入容量为 i 的背包中
+        for(int i = 0; i <= c; i++) {
+            if(weights[0] <= i)
+                memory[0][i] = values[0];
+        }
+        
+        // 将第 N 件物品加入背包中
+        for(int i = 1; i < n; i++) {              
+            for(int j = 1; j <= c; j++) {                                 // 背包的当前容量
+                memory[i%2][j] = memory[(i-1)%2][j];                      // 策略一
+
+                if(j - weights[i] >= 0) {                                 // 策略二
+                    long two = values[i] + memory[i-1][j-weights[i]];
+                    memory[i%2][j] = max(memory[i%2][j], two);            // 择优
+                }
+            }
+        }
+
+
+        return memory[(n-1)%2][c];
+    }
+};
+
+
+优化 0-1 背包问题
+* 优化辅助空间，只使用 C+1 的一维数组辅助空间；
+* 容量为 C 时开始考虑是否加入 id = i 的物品；
+* 背包问题在做空间优化的时候使用从后向前的遍历算是一个挺标准的技巧；
+
+    N 件不同物品                                           背包容量 c
+id    weight  value                 0       1       2       3       4       5
+
+ 0      1       6                   0       6       6       6       6       6
+ 1      2      10
+ 2      3      12
+
+#include <iostream>
+#include <vector>
+#include <cassert>
+
+using namespace std;
+
+// Time Complexity: O(n * c)
+// Space Complexity: O(c)
+class Solution {
+public:
+    long maxValue(vector<int>& weights, vector<int>& values, int c) {
+        assert(weights.size() == values.size());
+
+        int n = weights.size();
+        if(n == 0)
+            return 0;
+
+        // 申请辅助空间
+        vector<long> memory(c+1, 0);
+        
+        // 将第一个物品放入容量为 i 的背包中
+        for(int i = 0; i <= c; i++) {
+            if(weights[0] <= i)
+                memory[i] = values[0];
+        }
+        
+        // 将第 N 件物品加入背包中
+        for(int i = 1; i < n; i++) {              
+            for(int j = c; j >= weights[i]; j--) {      // 背包的当前容量
+                memory[j] = max(memory[j], values[i]+memory[j-weights[i]]); // 择优
+            }
+        }
+
+        return memory[c];
+    }
+};
+
+
+
+LeetCode 416 Partition Equal Subset Sum (本质上是 0-1背包问题)
+给定一个只包含正整数的非空数组，是否可以将这个数组的元素分成两个子集，使得两个子集的元素和相等。
+
+注意：
+数组中的每个元素不会超过 100；
+数组的太小不会超过 200；
+
+示例：
+输入：[1, 5, 11, 5]
+输出：true
+解释：可以分成[1, 5, 5] 和 [11] 两部分，使得元素和相等。
+
+示例：
+输入：[1, 2, 3, 5]
+输出：false
+解释：无法分成元素和相等的两部分。
+
+分析：
+典型的背包问题，其本质是在 n 个物品中选出一定量的物品，恰好填满 sum/2 的背包；
+设定问题的状态：F(n, C) 考虑的是将 n 个物品恰好填满容量为 C 的背包。
+状态转移函数：F(n, c) = F(n-1, c) || F(n-1, c-w(n))
+时间复杂度：O( n * sum/2) = O(n * sum)，即 n 行，sum/2 列 的双重 for 循环。 
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+// 递归 + 记忆化搜索
+class Solution {
+private:
+    // memory[i][c] 表示使用 nums[0…i] 这些元素，是否可以完全填满容量为 C 的背包
+    vector<vector<int>> memory;
+    
+    // 尝试将 n 个物品装入容量为 c 的背包中
+    bool tryFill(vector<int>& nums, int n, int c) {
+        // 当尝试加入 n 个物品时，物品不存在或者背包没有空间了，则直接返回 false
+        if(n < 1 || c < 0) {
+            return false;
+        }
+
+        // 背包恰好已经填满了，则直接返回true
+        if (c == 0) {        
+            return true;
+        }
+
+        if(memory[n-1][c] != -1) {
+            return memory[n-1][c] == 1;
+        }
+        memory[n-1][c] = (tryFill(nums, n-1, c) || tryFill(nums, n-1, c-nums[n-1]));
+        return memory[n-1][c];
+    }
+
+public:
+    bool canPartition(vector<int>& nums) {
+        int n = nums.size();
+        if(n == 0)
+            return true;
+
+        // 保存各元素的总和
+        int sum = 0;
+        for(int i = 0; i < n; i++) {
+            sum += nums[i];
+        }
+
+        // 因为当总和为奇数时，则不能将数组分成两部分，使其和相等
+        if(sum % 2 != 0)        
+            return false;
+
+        int C = sum / 2;    // 表示背包的容量
+
+        memory = vector<vector<int>>(n, vector<int>(C+1, -1));    // n 行，C+1 列
+
+        return tryFill(nums, n, C);
+    }
+};
+
+
+// 动态规划解法
+class Solution {
+public:
+    bool canPartition(vector<int>& nums) {
+        if(nums.size() == 0) {
+            return 0;
+        }
+
+        int sum = 0;
+        for(int i = 0; i < nums.size(); i++) {
+            sum += nums[i];
+        }
+
+        if(sum % 2 != 0)
+            return false;
+
+        int C = sum / 2;
+        vector<vector<bool>> memory(n, vector<bool>(C+1, false));
+
+        // 求解最基本的问题，即先将第一个物品放入容量为 c 的背包中
+        for(int i = 0; i < C+1; i++) {
+            if(i == nums[0]) {
+                memory[0][i] = true;
+            }
+        }
+        
+        for(int i = 1; i < n; i++) {
+            for(int j = 0; j < C+1; j++) {
+                memory[i][j] = memory[i-1][j];
+                if(j >= nums[i]) {
+                    memory[i][j] = memory[i][j] || memory[i][j-nums[i]];
+                }
+            }
+        }
+
+        return memory[n-1][C];
+    }
+};
+
+
+
+LeetCode 322 Coin Change
+给定不同面值的硬币，问最少需要多少枚硬币，可以凑成指定的金额？如果无法凑成指定的金额，则返回 -1。
+可以无限次使用同种面值的硬币。
+
+示例：
+输入：[1, 2, 5]，amount = 11
+输出：3
+解释：5+5+1 = 11
+
+输入：[2]，amount = 3
+输出：-1
+
+
+
+LeetCode 377 Combination Sum IV
+给定一个由正整数数组，其中的元素没有重复。问有多少中可能，使用这个数组中的数字，凑出一个指定的正整数 target。
+
+注意：
+同一个数字可以使用多次。
+
+示例：
+输入：[1, 2, 3]，target = 4
+输出：7
+解释：可能的组合有 [1, 1, 1, 1], [1, 1, 2], [1, 2, 1], [1, 3], [2, 1, 1], [2, 2], [3, 1].
+
+                                                                // 决策树
+                                                                  f(4)
+                                                                                  
+                             取 1                                        取 2                                     取 3
+                             
+                             f(3)                                       f(2)                                     f(1)
+                             
+        取 1                 取 2           取 3                   取 1         取 2                               取 1
+        
+        f(2)                f(1)           f(0)                   f(1)            f(0)                           f(0)
+        
+  取 1     取 2               取 1                                 取 1
+
+  f(1)     f(0)              f(0)                                 f(0)
+
+  取 1
+
+  f(0)
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+class Solution {
+private:
+    int count = 0;                                        // 使用全局变量
+
+    void combination(vector<int>& nums, int target) {
+        if(target == 0)
+            count++;
+
+        for(int i = 0; i < nums.size(); i++) {
+            if(target >= nums[i])
+                combination(nums, target-nums[i]);
+        }
+    }
+
+public:
+    int combinationSum4(vector<int>& nums, int target) {
+        int n = nums.size();
+        if(n == 0 && target == 0)                       // 特殊处理数组为空的情况
+            return 1;
+        
+        if(n == 0)
+            return 0;
+
+        combination(nums, target);
+
+        return count;
+    }
+};
+
+// 优化递归代码
+class Solution {
+private:
+    // 使用 int &count 引用，取代使用全局变量
+    void combination(vector<int>& nums, int target, int &count) {
+        if(target == 0)
+            count++;
+
+        for(int i = 0; i < nums.size(); i++) {
+            if(target >= nums[i])
+                combination(nums, target-nums[i], count);
+        }
+    }
+public:
+    int combinationSum4(vector<int>& nums, int target) {
+        int n = nums.size();
+        if(n == 0 && target == 0)                     // 特殊处理数组为空，且target == 0 的情况
+            return 1;
+        
+        if(n == 0)
+            return 0;
+        
+        int count = 0;
+        combination(nums, target, count);
+
+        return count;
+    }
+};
+
+
+Leetcode 474 Ones and Zeros
+给定一个字符串数组。数组中的每个字符串都是一个 01 串。问用 m 个 0 和 n 个 1，最多可以组成数组中的多少个 01 串？
+
+示例：
+输入：[10, 0001, 111001, 1, 0], m = 5, n = 3
+输出：4
+解释：10，0001，1，0；因为5个0，3个1已经被全部使用完毕。
+
+输入：[ 10, 0, 1 ]， m = 1, n = 1
+输出：2
+解释：0，1
+
+
+LeetCode 139 Word Break    （经典）
+给定一个非空字符串 s 和一个字符串数组 wordDict，问能否使用 wordDict 中的不同字符串首尾连接，组成 s。
+假定 wordDict 中没有重复的字符串。
+
+示例：
+输入：s = "leetcode", wordDict = ["leet", "code"]
+输出：true
+
+
+LeetCode 494 Target Sum
+给定一个非 0 数字序列，在这些数字前加上 + 或者 - 符号，使其计算结果为给定的整数 S。
+问一共有多少中可能。
+
+示例：
+输入： nums = [1, 1, 1, 1,1] , S = 3
+输出：5
+
+
+
+LeetCode 300 Longest Increasing Subsequence （非常经典）
+给定一个无序的整数数组，求其中的最长上升子序列的长度。
+
+示例：
+输入：[10, 9, 2, 5, 3, 7, 101, 18]
+输出：4
+解释：最长的上升子序列是：[2, 5, 7, 101] 或 [2, 5, 7, 18] 或 [2, 3, 7, 101] 或 [2, 3, 7, 18]
+
+nums      10    9   2   5   3   7   101   18
+memory     1    1   1   1   1   1     1    1
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+// 动态规划求解，先解决最基本的问题，然后逐步递推，求解数据规模更大的问题的解
+class Solution {
+public:
+    int lengthOfLIS(vector<int>& nums) {
+        int n = nums.size();
+        if(n == 0)
+            return 0;
+
+                                                    // memory[n-1] 表示加入第 n 个元素子序列后，所能构成的最大上升子序列的长度
+        vector<int> memory(n, 1);                   // 每一个元素默认都是长度为 1 的子序列, 最基本的问题的解
+        
+        for(int i = 1; i < n; i++) {
+            for(int j = 0; j < i; j++) {
+                if(nums[i] > nums[j]) {             // nums[i] 放在 nums[j] 后面能构成上升子序列
+                    memory[i] = max(memory[i], 1 + memory[j]);
+                }
+            }
+        }
+
+        int count = 0;                              // 取出最大值，表示最大的上升子序列的长度
+        for(int i = 0; i < n; i++) {
+            count = max(count, memory[i]);
+        }
+        return count;
+    }
+};
+
+
+Leetcode 376 Wiggle Subsequence 
+一个序列，它的相邻数字的大小关系是升序降序轮流交替的，就称为 wiggle sequence.
+比如，[1, 7, 4, 9, 2, 5] 就是一个 wiggle sequence。 但是 [1, 4, 7, 2, 5] 和 [1, 7, 4, 5, 5] 就不是。
+给出一个数组，求出它的最长 wiggle sequence 子序列。
+
+
+
+Longest Common Sequence (经典)
+给出两个字符串 S1 和 S2，求这两个字符串的最长公共子序列的长度。
+
+
+
