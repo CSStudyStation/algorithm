@@ -1278,5 +1278,65 @@ Leetcode 376 Wiggle Subsequence
 Longest Common Sequence (经典)
 给出两个字符串 S1 和 S2，求这两个字符串的最长公共子序列的长度。
 
+状态转移函数，
+从两个字符串的最后一位开始比较
+当 S1[m] == S2[n] 时，LCS(m, n) = 1 + LCS(m-1, n-1);
+当 S1[m] != S2[n] 时，LCS(m, n) = Max( LCS(m-1, n), LSC(m, n-1);)
+
+示例：
+输入：S1 = "ABCD"，S2 = "AEBD"
+输出：3，即为子序列 "ABD" 的长度
+
+                                                                               ABCD    |     AEBD
+                                                                          D == D，则求 1 + LCS(ABC, AEB)
+
+                                                                                ABC    |    AEB         
+                                                                             C != B，则分为 2 中策略
+
+                                    AB     |     AEB                                                                  ABC     |     AE
+                                  B == B，则求 1 + LCS(A, AE)                                                        C != E，则分为 2 中策略
+
+                                        A  |  AE                                                 AB     |     AE                           ABC     |     E
+                                     A ! E，则分为 2 中策略                                      B != E，则分为 2 中策略                               ……
+
+                          -  |  AE               A  |  A                             A   |   AE                   AB  |  A
+                          return 0               return 1                        A != E，则分为 2 中策略       B != A，则分为 2 中策略
+                                                
+                                                                                - | AE        A | A             A | A      AB | -
+                                                                               return 0      return 1          return 1   return 0
+                                                                                                
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+// 递归
+class Solution {
+private:
+    int LCS(string s1, int m, string s2, int n) {
+        if(m < 0 || n < 0) {
+            return 0;
+        }
+
+        if(s1[m] == s2[n]) {
+            return 1 + LCS(s1, m-1, s2, n-1);
+        }
+        else {
+            return max(LCS(s1, m-1, s2, n), LCS(s1, m, s2, n-1));
+        }
+    }
+public:
+    int lengthOfLCS(string s1, string s2) {
+        int m = s1.size();
+        int n = s2.size();
+        
+        if(m == 0 || n == 0) {
+            return 0;
+        }
+
+        return LCS(s1, m-1, s2, n-1);
+    }
+};
+
 
 
